@@ -3,13 +3,13 @@
   coverage, oslosphinx, oslotest, testscenarios, six, ddt 
 }:
 buildPythonPackage rec {
-  version = "0.8.2";
+  version = "1.0.0";
   pname = "os-testr";
   name = "${pname}-${version}";
 
   src = fetchurl {
     url = "mirror://pypi/o/os-testr/${name}.tar.gz";
-    sha256 = "d8a60bd56c541714a5cab4d1996c8ddfdb5c7c35393d55be617803048c170837";
+    sha256 = "387950e4627aa92c747414ac4a12b5c1127e1e25e405995a90236b1c5b8d7150";
   };
 
   patchPhase = ''

@@ -6,13 +6,13 @@
 , enum34, functools32
 }:
 buildPythonApplication rec {
-  version = "1.15.0";
+  version = "1.16.1";
   pname = "docker-compose";
   name = "${pname}-${version}";
 
   src = fetchurl {
     url = "mirror://pypi/d/docker-compose/${name}.tar.gz";
-    sha256 = "0yg58m5kk22kihbra0h40miqnbdmkirjr9y47wns613sdikrymmg";
+    sha256 = "fb46a6a2c4d193a3ff1e4d7208eea920b629c81dc92257c87f3f93095cfb0bdf";
   };
 
   # lots of networking and other fails

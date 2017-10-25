@@ -12,7 +12,7 @@
 
 buildPythonPackage rec {
   pname = "testtools";
-  version = "1.8.0";
+  version = "2.3.0";
   name = "${pname}-${version}";
 
   # Python 2 only judging from SyntaxError
@@ -20,7 +20,7 @@ buildPythonPackage rec {
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "15yxz8d70iy1b1x6gd7spvblq0mjxjardl4vnaqasxafzc069zca";
+    sha256 = "5827ec6cf8233e0f29f51025addd713ca010061204fdea77484a2934690a0559";
   };
 
   propagatedBuildInputs = [ pbr python_mimeparse extras lxml unittest2 ];
