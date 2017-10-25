@@ -22,7 +22,7 @@ buildPythonPackage rec {
   doCheck = false;
 
   prePatch = ''
-    substituteInPlace sounddevice.py --replace "'portaudio'" "'${portaudio}/lib/libportaudio.so.2'"
+    substituteInPlace src/sounddevice.py --replace "'portaudio'" "'${portaudio}/lib/libportaudio.so.2'"
   '';
 
   meta = {
