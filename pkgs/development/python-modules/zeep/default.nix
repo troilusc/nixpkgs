@@ -20,6 +20,7 @@
 , pytestcov
 , requests-mock
 , testtools
+, tornado
 }:
 
 let
@@ -46,6 +47,10 @@ in buildPythonPackage {
 
   # testtools dependency not supported for py3k
   doCheck = !isPy3k;
+
+  checkInputs = [
+    tornado
+  ];
 
   buildInputs = if isPy3k then [] else [
     freezegun

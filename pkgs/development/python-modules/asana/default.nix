@@ -18,7 +18,7 @@ buildPythonPackage rec {
     sha256 = "eab8d24c2a4670b541b75da2f4bf5b995fe71559c1338da53ce9039f7b19c9a0";
   };
 
-  buildInputs = [ pytest ];
+  checkInputs = [ pytest ];
   propagatedBuildInputs = [ requests requests_oauthlib six ];
 
   patchPhase = ''

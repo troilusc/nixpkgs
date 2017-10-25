@@ -1,4 +1,6 @@
-{ stdenv, fetchurl, buildPythonPackage, pip, pytest, click, six, first, setuptools_scm, glibcLocales }:
+{ stdenv, fetchurl, buildPythonPackage, pip, pytest, click, six, first
+, setuptools_scm, glibcLocales, mock }:
+
 buildPythonPackage rec {
   pname = "pip-tools";
   version = "1.10.1";
@@ -10,7 +12,7 @@ buildPythonPackage rec {
   };
 
   LC_ALL = "en_US.UTF-8";
-  buildInputs = [ pytest glibcLocales ];
+  checkInputs = [ pytest glibcLocales mock ];
   propagatedBuildInputs = [ pip click six first setuptools_scm ];
 
   checkPhase = ''

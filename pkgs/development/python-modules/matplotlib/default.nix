@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, python, buildPythonPackage, pycairo
+{ stdenv, fetchurl, python, buildPythonPackage, pycairo, backports_functools_lru_cache
 , which, cycler, dateutil, nose, numpy, pyparsing, sphinx, tornado
 , freetype, libpng, pkgconfig, mock, pytz, pygobject3, functools32, subprocess32
 , enableGhostscript ? false, ghostscript ? null, gtk3
@@ -39,7 +39,7 @@ buildPythonPackage rec {
 
   propagatedBuildInputs =
     [ cycler dateutil nose numpy pyparsing tornado freetype
-      libpng pkgconfig mock pytz
+      libpng pkgconfig mock pytz backports_functools_lru_cache
     ]
     ++ stdenv.lib.optional enableGtk2 pygtk
     ++ stdenv.lib.optionals enableGtk3 [ cairo pycairo gtk3 gobjectIntrospection pygobject3 ]
