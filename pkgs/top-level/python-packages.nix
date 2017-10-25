@@ -1191,6 +1191,8 @@ in {
     };
   };
 
+  backports_tempfile = callPackage ../development/python-modules/backports_tempfile { };
+
   backports_unittest-mock = callPackage ../development/python-modules/backports_unittest-mock {};
 
   babelfish = buildPythonPackage rec {
