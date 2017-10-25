@@ -15101,6 +15101,8 @@ in {
     };
   };
 
+  parso = callPackage ../development/python-modules/parso { };
+
   partd = buildPythonPackage rec {
     name = "partd-${version}";
     version = "0.3.7";
