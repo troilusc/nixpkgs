@@ -1,4 +1,4 @@
-{ stdenv, buildPythonPackage, fetchPypi, pytest, glibcLocales, tox, pytestcov }:
+{ stdenv, buildPythonPackage, fetchPypi, pytest, glibcLocales, tox, pytestcov, parso }:
 
 buildPythonPackage rec {
   pname = "jedi";
@@ -11,6 +11,8 @@ buildPythonPackage rec {
   };
 
   checkInputs = [ pytest glibcLocales tox pytestcov ];
+
+  propagatedBuildInputs = [ parso ];
 
   checkPhase = ''
     LC_ALL="en_US.UTF-8" py.test test
