@@ -8,7 +8,6 @@
 , cython
 , dateutil
 , scipy
-, moto
 , numexpr
 , pytz
 , xlrd
@@ -28,12 +27,12 @@ let
   inherit (stdenv) isDarwin;
 in buildPythonPackage rec {
   pname = "pandas";
-  version = "0.21.0";
+  version = "0.20.3";
   name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0nf50ls2cnlsd2635nyji7l70xc91dw81qg5y01g5sifwwqcpmaw";
+    sha256 = "a777e07633d83d546c55706420179551c8e01075b53c497dcf8ae4036766bc66";
   };
 
   LC_ALL = "en_US.UTF-8";
@@ -65,7 +64,6 @@ in buildPythonPackage rec {
                 "['pandas/src/klib', 'pandas/src', '$cpp_sdk']"
   '';
 
-  checkInputs = [ moto ];
   checkPhase = ''
     runHook preCheck
   ''
