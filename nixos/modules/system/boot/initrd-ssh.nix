@@ -79,7 +79,7 @@ in
 
     boot.initrd.network.ssh.authorizedKeys = mkOption {
       type = types.listOf types.str;
-      default = config.users.extraUsers.root.openssh.authorizedKeys.keys;
+      default = config.users.users.root.openssh.authorizedKeys.keys;
       description = ''
         Authorized keys for the root user on initrd.
       '';
@@ -89,9 +89,6 @@ in
 
   config = mkIf (config.boot.initrd.network.enable && cfg.enable) {
     assertions = [
-      { assertion = cfg.hostRSAKey != null || cfg.hostDSSKey != null || cfg.hostECDSAKey != null;
-        message = "You should specify at least one host key for initrd SSH";
-      }
       { assertion = cfg.authorizedKeys != [];
         message = "You should specify at least one authorized key for initrd SSH";
       }
@@ -121,7 +118,7 @@ in
         echo ${escapeShellArg key} >> /root/.ssh/authorized_keys
       '') cfg.authorizedKeys)}
 
-      dropbear -s -j -k -E -m -p ${toString cfg.port}
+      dropbear -s -j -k -E -p ${toString cfg.port} ${optionalString (cfg.hostRSAKey == null && cfg.hostDSSKey == null && cfg.hostECDSAKey == null) "-R"}
     '';
 
     boot.initrd.secrets =

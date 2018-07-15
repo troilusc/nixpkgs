@@ -4,7 +4,6 @@
 buildPythonPackage rec {
   pname = "acoustics";
   version = "0.1.2";
-  name = "${pname}-${version}";
 
   buildInputs = [ cython pytest ];
   propagatedBuildInputs = [ numpy scipy matplotlib pandas tabulate ];
@@ -19,7 +18,7 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "A package for acousticians";
-    maintainer = with maintainers; [ fridh ];
+    maintainers = with maintainers; [ fridh ];
     license = with licenses; [ bsd3 ];
     homepage = https://github.com/python-acoustics/python-acoustics;
   };

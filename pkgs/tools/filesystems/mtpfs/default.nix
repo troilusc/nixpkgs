@@ -14,12 +14,12 @@ stdenv.mkDerivation rec {
   '';
 
   src = fetchurl {
-    url = "http://www.adebenham.com/files/mtp/${name}.tar.gz";
+    url = "https://www.adebenham.com/files/mtp/${name}.tar.gz";
     sha256 = "07acrqb17kpif2xcsqfqh5j4axvsa4rnh6xwnpqab5b9w5ykbbqv";
   };
 
   meta = {
-    homepage = https://code.google.com/p/mtpfs/;
+    homepage = https://github.com/cjd/mtpfs;
     description = "FUSE Filesystem providing access to MTP devices";
     platforms = stdenv.lib.platforms.all;
     maintainers = [ stdenv.lib.maintainers.qknight ];

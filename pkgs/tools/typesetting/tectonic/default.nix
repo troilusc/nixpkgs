@@ -1,24 +1,23 @@
 { stdenv, fetchFromGitHub, rustPlatform, makeWrapper
-, fontconfig, harfbuzz-icu, openssl, pkgconfig }:
+, darwin, fontconfig, harfbuzz-icu, openssl, pkgconfig }:
 
-with rustPlatform;
-
-buildRustPackage rec {
+rustPlatform.buildRustPackage rec {
   name = "tectonic-${version}";
-  version = "0.1.6";
+  version = "0.1.8";
 
   src = fetchFromGitHub {
     owner = "tectonic-typesetting";
     repo = "tectonic";
     rev = "v${version}";
-    sha256 = "0k5vkn112bjwh4wnxryzqz79dlja64k7s105mf3yaik136hqnmqv";
+    sha256 = "1bm3s2zkyy44xrc804c65hrbc6ixzcr95na671b0dannjrikrx1x";
   };
 
-  cargoSha256 = "03bqhgz8c4ipdkd3g448bcrr6d188h87vskcfcc3mqlcxg77b8q5";
+  cargoSha256 = "1pyaw72h85ydq794mpgfjfq7dcq3a1dg4infh770swfaycyll6h6";
 
   nativeBuildInputs = [ pkgconfig ];
 
-  buildInputs = [ fontconfig harfbuzz-icu openssl ];
+  buildInputs = [ fontconfig harfbuzz-icu openssl ]
+    ++ stdenv.lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [ ApplicationServices Cocoa Foundation ]);
 
   # tests fail due to read-only nix store
   doCheck = false;

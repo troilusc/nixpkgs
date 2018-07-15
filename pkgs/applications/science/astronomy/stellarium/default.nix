@@ -1,24 +1,31 @@
-{ mkDerivation, lib, fetchurl
-, cmake, freetype, libpng, mesa, gettext, openssl, perl, libiconv
+{ mkDerivation, lib, fetchFromGitHub
+, cmake, freetype, libpng, libGLU_combined, gettext, openssl, perl, libiconv
 , qtscript, qtserialport, qttools
-, qtmultimedia
+, qtmultimedia, qtlocation, makeWrapper, qtbase
 }:
 
 mkDerivation rec {
   name = "stellarium-${version}";
-  version = "0.15.0";
+  version = "0.18.1";
 
-  src = fetchurl {
-    url = "mirror://sourceforge/stellarium/${name}.tar.gz";
-    sha256 = "0il751lgnfkx35h1m8fzwwnrygpxjx2a80gng1i1rbybkykf7l3l";
+  src = fetchFromGitHub {
+    owner = "Stellarium";
+    repo = "stellarium";
+    rev = "v${version}";
+    sha256 = "0srwi08azzzayf50dr4dr1zcdcc8hwribzv7xvb7hbp6xp51c813";
   };
 
   nativeBuildInputs = [ cmake perl ];
 
   buildInputs = [
-    freetype libpng mesa openssl libiconv qtscript qtserialport qttools
-    qtmultimedia
+    freetype libpng libGLU_combined openssl libiconv qtscript qtserialport qttools
+    qtmultimedia qtlocation qtbase makeWrapper
   ];
+
+  postInstall = ''
+    wrapProgram $out/bin/stellarium \
+      --prefix QT_PLUGIN_PATH : "${qtbase}/lib/qt-5.${lib.versions.minor qtbase.version}/plugins"
+  '';
 
   meta = with lib; {
     description = "Free open-source planetarium";
@@ -26,6 +33,6 @@ mkDerivation rec {
     license = licenses.gpl2;
 
     platforms = platforms.linux; # should be mesaPlatforms, but we don't have qt on darwin
-    maintainers = [ maintainers.peti ];
+    maintainers = with maintainers; [ peti ma27 ];
   };
 }

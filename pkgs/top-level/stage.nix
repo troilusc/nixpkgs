@@ -26,13 +26,13 @@
   # us to avoid expensive splicing.
   buildPackages
 
-, # The package set used in the next stage. If null, `__targetPackages` will be
+, # The package set used in the next stage. If null, `targetPackages` will be
   # defined internally as the final produced package set itself, just like with
   # `buildPackages` and for the same reasons.
   #
   # THIS IS A HACK for compilers that don't think critically about cross-
   # compilation. Please do *not* use unless you really know what you are doing.
-  __targetPackages
+  targetPackages
 
 , # The standard environment to use for building packages.
   stdenv
@@ -72,7 +72,7 @@ let
   stdenvBootstappingAndPlatforms = self: super: {
     buildPackages = (if buildPackages == null then self else buildPackages)
       // { recurseForDerivations = false; };
-    __targetPackages = (if __targetPackages == null then self else __targetPackages)
+    targetPackages = (if targetPackages == null then self else targetPackages)
       // { recurseForDerivations = false; };
     inherit stdenv;
   };
@@ -93,11 +93,12 @@ let
 
   allPackages = self: super:
     let res = import ./all-packages.nix
-      { inherit lib nixpkgsFun noSysDirs config; }
+      { inherit lib noSysDirs config; }
       res self;
     in res;
 
-  aliases = self: super: import ./aliases.nix super;
+  aliases = self: super: if config.skipAliases or false then {}
+                         else import ./aliases.nix lib self super;
 
   # stdenvOverrides is used to avoid having multiple of versions
   # of certain dependencies that were used in bootstrapping the
@@ -116,7 +117,52 @@ let
     lib.optionalAttrs allowCustomOverrides
       ((config.packageOverrides or (super: {})) super);
 
-  # The complete chain of package set builders, applied from top to bottom
+  # Convenience attributes for instantitating package sets. Each of
+  # these will instantiate a new version of allPackages. Currently the
+  # following package sets are provided:
+  #
+  # - pkgsCross.<system> where system is a member of lib.systems.examples
+  # - pkgsMusl
+  # - pkgsi686Linux
+  otherPackageSets = self: super: {
+    # This maps each entry in lib.systems.examples to its own package
+    # set. Each of these will contain all packages cross compiled for
+    # that target system. For instance, pkgsCross.rasberryPi.hello,
+    # will refer to the "hello" package built for the ARM6-based
+    # Raspberry Pi.
+    pkgsCross = lib.mapAttrs (n: crossSystem:
+                              nixpkgsFun { inherit crossSystem; })
+                              lib.systems.examples;
+
+    # All packages built with the Musl libc. This will override the
+    # default GNU libc on Linux systems. Non-Linux systems are not
+    # supported.
+    pkgsMusl = if stdenv.hostPlatform.isLinux then nixpkgsFun {
+      localSystem = {
+        parsed = stdenv.hostPlatform.parsed // {
+          abi = {
+            "gnu" = lib.systems.parse.abis.musl;
+            "gnueabi" = lib.systems.parse.abis.musleabi;
+            "gnueabihf" = lib.systems.parse.abis.musleabihf;
+          }.${stdenv.hostPlatform.parsed.abi.name} or lib.systems.parse.abis.musl;
+        };
+      };
+    } else throw "Musl libc only supports Linux systems.";
+
+    # All packages built for i686 Linux.
+    # Used by wine, firefox with debugging version of Flash, ...
+    pkgsi686Linux = assert stdenv.hostPlatform.isLinux; nixpkgsFun {
+      localSystem = {
+        parsed = stdenv.hostPlatform.parsed // {
+          cpu = lib.systems.parse.cpuTypes.i686;
+        };
+      };
+    };
+  };
+
+  # The complete chain of package set builders, applied from top to bottom.
+  # stdenvOverlays must be last as it brings package forward from the
+  # previous bootstrapping phases which have already been overlayed.
   toFix = lib.foldl' (lib.flip lib.extends) (self: {}) ([
     stdenvBootstappingAndPlatforms
     platformCompat
@@ -124,10 +170,11 @@ let
     trivialBuilders
     splice
     allPackages
+    otherPackageSets
     aliases
-    stdenvOverrides
     configOverrides
-  ] ++ overlays);
+  ] ++ overlays ++ [
+    stdenvOverrides ]);
 
 in
   # Return the complete set of packages.

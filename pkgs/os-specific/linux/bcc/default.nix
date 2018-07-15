@@ -1,23 +1,52 @@
-{ stdenv, fetchFromGitHub, makeWrapper, cmake, llvmPackages_5, kernel
-, flex, bison, elfutils, python, pythonPackages, luajit, netperf, iperf }:
+{ stdenv, fetchFromGitHub, fetchpatch, makeWrapper, cmake, llvmPackages, kernel
+, flex, bison, elfutils, python, luajit, netperf, iperf, libelf
+, systemtap
+}:
 
-stdenv.mkDerivation rec {
-  version = "0.4.0";
+python.pkgs.buildPythonApplication rec {
+  version = "0.6.0";
   name = "bcc-${version}";
 
   src = fetchFromGitHub {
-    owner = "iovisor";
-    repo = "bcc";
-    rev = "v${version}";
-    sha256 = "106ri3yhjhp3dgsjb05y4j6va153d5nqln3zjdz6qfz87svak0rw";
+    owner  = "iovisor";
+    repo   = "bcc";
+    rev    = "v${version}";
+    sha256 = "1fk2kvbdvm87rkha2cigz2qhhlrni4g0dcnmiiyya79y85ahfvga";
   };
 
+  format = "other";
+
   buildInputs = [
-    llvmPackages_5.llvm llvmPackages_5.clang-unwrapped kernel
-    elfutils python pythonPackages.netaddr luajit netperf iperf
+    llvmPackages.llvm llvmPackages.clang-unwrapped kernel
+    elfutils luajit netperf iperf
+    systemtap.stapBuild
   ];
 
-  nativeBuildInputs = [ makeWrapper cmake flex bison ];
+  patches = [
+    # This is needed until we fix
+    # https://github.com/NixOS/nixpkgs/issues/40427
+    ./fix-deadlock-detector-import.patch
+  ];
+
+  nativeBuildInputs = [ makeWrapper cmake flex bison ]
+    # libelf is incompatible with elfutils-libelf
+    ++ stdenv.lib.filter (x: x != libelf) kernel.moduleBuildDependencies;
+
+  cmakeFlags = [
+    "-DBCC_KERNEL_MODULES_DIR=${kernel.dev}/lib/modules"
+    "-DREVISION=${version}"
+    "-DENABLE_USDT=ON"
+    "-DENABLE_CPP_API=ON"
+  ];
+
+  postPatch = ''
+    substituteAll ${./libbcc-path.patch} ./libbcc-path.patch
+    patch -p1 < libbcc-path.patch
+  '';
+
+  propagatedBuildInputs = [
+    python.pkgs.netaddr
+  ];
 
   postInstall = ''
     mkdir -p $out/bin $out/share
@@ -26,19 +55,24 @@ stdenv.mkDerivation rec {
     mv $out/share/bcc/man $out/share/
 
     find $out/share/bcc/tools -type f -executable -print0 | \
-    while IFS= read -r -d $'\0' f; do
-      pythonLibs="$out/lib/python2.7/site-packages:${pythonPackages.netaddr}/lib/${python.libPrefix}/site-packages"
-      rm -f $out/bin/$(basename $f)
-      makeWrapper $f $out/bin/$(basename $f) \
-        --prefix LD_LIBRARY_PATH : $out/lib \
-        --prefix PYTHONPATH : "$pythonLibs"
+    while IFS= read -r -d ''$'\0' f; do
+      bin=$out/bin/$(basename $f)
+      if [ ! -e $bin ]; then
+        ln -s $f $bin
+      fi
     done
+
+    sed -i -e "s!lib=.*!lib=$out/bin!" $out/bin/{java,ruby,node,python}gc
+  '';
+
+  postFixup = ''
+    wrapPythonProgramsIn "$out/share/bcc/tools" "$out $pythonPath"
   '';
 
   meta = with stdenv.lib; {
     description = "Dynamic Tracing Tools for Linux";
     homepage = https://iovisor.github.io/bcc/;
     license = licenses.asl20;
-    maintainers = with maintainers; [ ragge ];
+    maintainers = with maintainers; [ ragge mic92 ];
   };
 }

@@ -1,40 +1,56 @@
-{ stdenv, fetchFromGitHub, autoreconfHook, pkgconfig, gtk_doc, gobjectIntrospection
-, libgsystem, xz, e2fsprogs, libsoup, gpgme, which, autoconf, automake, libtool, fuse
-, libcap, yacc, libxslt, docbook_xsl, docbook_xml_dtd_42
+{ stdenv, fetchFromGitHub, fetchpatch, pkgconfig, gtk-doc, gobjectIntrospection, gnome3
+, glib, systemd, xz, e2fsprogs, libsoup, gpgme, which, autoconf, automake, libtool, fuse, utillinuxMinimal, libselinux
+, libarchive, libcap, bzip2, yacc, libxslt, docbook_xsl, docbook_xml_dtd_42, python3
 }:
 
 let
+  version = "2018.6";
+
   libglnx-src = fetchFromGitHub {
-    owner  = "GNOME";
-    repo   = "libglnx";
-    rev    = "50a0feaba03ffa5a1980d3a14487276b8f49f8a6";
-    sha256 = "1rn5jdh84y1yfpqmvidx82lkm0jr7scjzdrps57r37ksxvrk3ibs";
+    owner = "GNOME";
+    repo = "libglnx";
+    rev = "e1a78cf2f5351d5394ccfb79f3f5a7b4917f73f3";
+    sha256 = "10kzyjbrmr98i65hlz8jc1v5bijyqwwfp6qqjbd5g3y0n520iaxc";
   };
 
   bsdiff-src = fetchFromGitHub {
-    owner  = "mendsley";
-    repo   = "bsdiff";
-    rev    = "7d70d8f4ff48345bc76e314c9d98da91f78873fa";
-    sha256 = "0ai2kykj8i4bqcy3gry36r3n4ax0fldncfhksl5b293nf2fihnws";
+    owner = "mendsley";
+    repo = "bsdiff";
+    rev = "1edf9f656850c0c64dae260960fabd8249ea9c60";
+    sha256 = "1h71d2h2d3anp4msvpaff445rnzdxii3id2yglqk7af9i43kdsn1";
   };
-
-  version = "2017.9";
 in stdenv.mkDerivation {
   name = "ostree-${version}";
 
+  outputs = [ "out" "dev" "man" "installedTests" ];
+
   src = fetchFromGitHub {
-    rev    = "v${version}";
-    owner  = "ostreedev";
-    repo   = "ostree";
-    sha256 = "1040xcw8qcs6xq8x4wg47hha3915qzb6lndb38wjyn6wzl1680q3";
+    rev = "v${version}";
+    owner = "ostreedev";
+    repo = "ostree";
+    sha256 = "0kk04pznk6m6fqdz609m2zcnkalcw9q8fsx8wm42k6dhf6cw7l3g";
   };
 
+  patches = [
+    # Tests access the helper using relative path
+    # https://github.com/ostreedev/ostree/issues/1593
+    (fetchpatch {
+      url = https://github.com/ostreedev/ostree/pull/1633.patch;
+      sha256 = "07xiw1dr7j4yw3w92qhw37f9crlglibflcqj2kf0v5gfrl9i6g4j";
+    })
+  ];
+
   nativeBuildInputs = [
-    autoconf automake libtool pkgconfig gtk_doc gobjectIntrospection which yacc
+    autoconf automake libtool pkgconfig gtk-doc gobjectIntrospection which yacc
     libxslt docbook_xsl docbook_xml_dtd_42
   ];
 
-  buildInputs = [ libgsystem xz e2fsprogs libsoup gpgme fuse libcap ];
+  buildInputs = [
+    glib systemd e2fsprogs libsoup gpgme fuse libselinux libcap
+    libarchive bzip2 xz
+    utillinuxMinimal # for libmount
+    (python3.withPackages (p: with p; [ pyyaml ])) gnome3.gjs # for tests
+  ];
 
   prePatch = ''
     rmdir libglnx bsdiff
@@ -44,16 +60,24 @@ in stdenv.mkDerivation {
 
   preConfigure = ''
     env NOCONFIGURE=1 ./autogen.sh
-
-    configureFlags+="--with-systemdsystemunitdir=$out/lib/systemd/system"
   '';
+
+  configureFlags = [
+    "--with-systemdsystemunitdir=$(out)/lib/systemd/system"
+    "--with-systemdsystemgeneratordir=$(out)/lib/systemd/system-generators"
+    "--enable-installed-tests"
+  ];
+
+  makeFlags = [
+    "installed_testdir=$(installedTests)/libexec/installed-tests/libostree"
+    "installed_test_metadir=$(installedTests)/share/installed-tests/libostree"
+  ];
 
   meta = with stdenv.lib; {
     description = "Git for operating system binaries";
-    homepage    = "http://live.gnome.org/OSTree/";
-    license     = licenses.lgpl2Plus;
-    platforms   = platforms.linux;
+    homepage = https://ostree.readthedocs.io/en/latest/;
+    license = licenses.lgpl2Plus;
+    platforms = platforms.linux;
     maintainers = with maintainers; [ copumpkin ];
   };
 }
-

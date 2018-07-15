@@ -28,6 +28,7 @@ let
 
   serverEnv = env //
     { HYDRA_TRACKER = cfg.tracker;
+      XDG_CACHE_HOME = "${baseDir}/www/.cache";
       COLUMNS = "80";
       PGPASSFILE = "${baseDir}/pgpass-www"; # grrr
     } // (optionalAttrs cfg.debugServer { DBIC_TRACE = "1"; });
@@ -193,11 +194,11 @@ in
 
   config = mkIf cfg.enable {
 
-    users.extraGroups.hydra = {
+    users.groups.hydra = {
       gid = config.ids.gids.hydra;
     };
 
-    users.extraUsers.hydra =
+    users.users.hydra =
       { description = "Hydra";
         group = "hydra";
         createHome = true;
@@ -206,7 +207,7 @@ in
         uid = config.ids.uids.hydra;
       };
 
-    users.extraUsers.hydra-queue-runner =
+    users.users.hydra-queue-runner =
       { description = "Hydra queue runner";
         group = "hydra";
         useDefaultShell = true;
@@ -214,7 +215,7 @@ in
         uid = config.ids.uids.hydra-queue-runner;
       };
 
-    users.extraUsers.hydra-www =
+    users.users.hydra-www =
       { description = "Hydra web server";
         group = "hydra";
         useDefaultShell = true;
@@ -225,14 +226,14 @@ in
 
     services.hydra.extraConfig =
       ''
-        using_frontend_proxy 1
-        base_uri ${cfg.hydraURL}
-        notification_sender ${cfg.notificationSender}
-        max_servers 25
+        using_frontend_proxy = 1
+        base_uri = ${cfg.hydraURL}
+        notification_sender = ${cfg.notificationSender}
+        max_servers = 25
         ${optionalString (cfg.logo != null) ''
-          hydra_logo ${cfg.logo}
+          hydra_logo = ${cfg.logo}
         ''}
-        gc_roots_dir ${cfg.gcRootsDir}
+        gc_roots_dir = ${cfg.gcRootsDir}
         use-substitutes = ${if cfg.useSubstitutes then "1" else "0"}
       '';
 

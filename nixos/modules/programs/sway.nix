@@ -4,33 +4,42 @@ with lib;
 
 let
   cfg = config.programs.sway;
-  sway = pkgs.sway;
+  swayPackage = pkgs.sway;
 
-  swayWrapped = pkgs.writeScriptBin "sway" ''
-    #! ${pkgs.stdenv.shell}
-    ${cfg.extraSessionCommands}
-    PATH="${sway}/bin:$PATH"
-    exec ${pkgs.dbus.dbus-launch} --exit-with-session "${sway}/bin/sway"
+  swayWrapped = pkgs.writeShellScriptBin "sway" ''
+    if [[ "$#" -ge 1 ]]; then
+      exec sway-setcap "$@"
+    else
+      ${cfg.extraSessionCommands}
+      exec ${pkgs.dbus.dbus-launch} --exit-with-session sway-setcap
+    fi
   '';
   swayJoined = pkgs.symlinkJoin {
-    name = "sway-wrapped";
-    paths = [ swayWrapped sway ];
+    name = "sway-joined";
+    paths = [ swayWrapped swayPackage ];
   };
-in
-{
+in {
   options.programs.sway = {
-    enable = mkEnableOption "sway";
+    enable = mkEnableOption ''
+      the tiling Wayland compositor Sway. After adding yourself to the "sway"
+      group you can manually launch Sway by executing "sway" from a terminal.
+      If you call "sway" with any parameters the extraSessionCommands won't be
+      executed and Sway won't be launched with dbus-launch'';
 
     extraSessionCommands = mkOption {
-      default     = "";
-      type        = types.lines;
+      type = types.lines;
+      default = "";
       example = ''
-        export XKB_DEFAULT_LAYOUT=us,de
-        export XKB_DEFAULT_VARIANT=,nodeadkeys
-        export XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle,
+        # Define a keymap (US QWERTY is the default)
+        export XKB_DEFAULT_LAYOUT=de,us
+        export XKB_DEFAULT_VARIANT=nodeadkeys
+        export XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle,caps:escape
+        # Change the Keyboard repeat delay and rate
+        export WLC_REPEAT_DELAY=660
+        export WLC_REPEAT_RATE=25
       '';
       description = ''
-        Shell commands executed just before sway is started.
+        Shell commands executed just before Sway is started.
       '';
     };
 
@@ -39,9 +48,12 @@ in
       default = with pkgs; [
         i3status xwayland rxvt_unicode dmenu
       ];
+      defaultText = literalExample ''
+        with pkgs; [ i3status xwayland rxvt_unicode dmenu ];
+      '';
       example = literalExample ''
         with pkgs; [
-          i3status xwayland rxvt_unicode dmenu
+          i3lock light termite
         ]
       '';
       description = ''
@@ -53,16 +65,21 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ swayJoined ] ++ cfg.extraPackages;
     security.wrappers.sway = {
-      source = "${swayJoined}/bin/sway";
+      program = "sway-setcap";
+      source = "${swayPackage}/bin/sway";
       capabilities = "cap_sys_ptrace,cap_sys_tty_config=eip";
       owner = "root";
       group = "sway";
       permissions = "u+rx,g+rx";
     };
 
-    users.extraGroups.sway = {};
+    users.groups.sway = {};
+    security.pam.services.swaylock = {};
 
     hardware.opengl.enable = mkDefault true;
     fonts.enableDefaultFonts = mkDefault true;
+    programs.dconf.enable = mkDefault true;
   };
+
+  meta.maintainers = with lib.maintainers; [ gnidorah primeos ];
 }

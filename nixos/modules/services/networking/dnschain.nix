@@ -141,7 +141,7 @@ in
         dns = "127.0.0.1:${toString cfg.dns.port}";
       };
 
-    users.extraUsers = singleton {
+    users.users = singleton {
       name = username;
       description = "DNSChain daemon user";
       home = dataDir;
@@ -158,7 +158,7 @@ in
       serviceConfig = {
         User = "dnschain";
         Restart = "on-failure";
-        ExecStart = "${pkgs.dnschain}/bin/dnschain";
+        ExecStart = "${pkgs.nodePackages.dnschain}/bin/dnschain";
       };
 
       preStart = ''

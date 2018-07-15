@@ -76,6 +76,8 @@ let
       define('SMTP_FROM_NAME', '${escape ["'" "\\"] cfg.email.fromName}');
       define('SMTP_FROM_ADDRESS', '${escape ["'" "\\"] cfg.email.fromAddress}');
       define('DIGEST_SUBJECT', '${escape ["'" "\\"] cfg.email.digestSubject}');
+
+      ${cfg.extraConfig}
   '';
 
  in {
@@ -99,8 +101,8 @@ let
 
       user = mkOption {
         type = types.str;
-        default = "nginx";
-        example = "nginx";
+        default = "tt_rss";
+        example = "tt_rss";
         description = ''
           User account under which both the update daemon and the web-application run.
         '';
@@ -431,6 +433,26 @@ let
         '';
       };
 
+      pluginPackages = mkOption {
+        type = types.listOf types.package;
+        default = [];
+        description = ''
+          List of plugins to install. The list elements are expected to
+          be derivations. All elements in this derivation are automatically
+          copied to the <literal>plugins.local</literal> directory.
+        '';
+      };
+
+      themePackages = mkOption {
+        type = types.listOf types.package;
+        default = [];
+        description = ''
+          List of themes to install. The list elements are expected to
+          be derivations. All elements in this derivation are automatically
+          copied to the <literal>themes.local</literal> directory.
+        '';
+      };
+
       logDestination = mkOption {
         type = types.enum ["" "sql" "syslog"];
         default = "sql";
@@ -439,6 +461,14 @@ let
           you can read in Preferences -> System), syslog - logs to system log.
           Setting this to blank uses PHP logging (usually to http server
           error.log).
+        '';
+      };
+
+      extraConfig = mkOption {
+        type = types.lines;
+        default = "";
+        description = ''
+          Additional lines to append to <literal>config.php</literal>.
         '';
       };
     };
@@ -466,25 +496,27 @@ let
       '';
     };
 
-    services.nginx.virtualHosts = mkIf (cfg.virtualHost != null) {
-      "${cfg.virtualHost}" = {
-        root = "${cfg.root}";
+    # NOTE: No configuration is done if not using virtual host
+    services.nginx = mkIf (cfg.virtualHost != null) {
+      enable = true;
+      virtualHosts = {
+        "${cfg.virtualHost}" = {
+          root = "${cfg.root}";
 
-        locations."/" = {
-          index = "index.php";
-        };
+          locations."/" = {
+            index = "index.php";
+          };
 
-        locations."~ \.php$" = {
-          extraConfig = ''
-            fastcgi_split_path_info ^(.+\.php)(/.+)$;
-            fastcgi_pass unix:${phpfpmSocketName};
-            fastcgi_index index.php;
-            fastcgi_param SCRIPT_FILENAME ${cfg.root}/$fastcgi_script_name;
-          '';
+          locations."~ \.php$" = {
+            extraConfig = ''
+              fastcgi_split_path_info ^(.+\.php)(/.+)$;
+              fastcgi_pass unix:${phpfpmSocketName};
+              fastcgi_index index.php;
+            '';
+          };
         };
       };
     };
-
 
     systemd.services.tt-rss = let
       dbService = if cfg.database.type == "pgsql" then "postgresql.service" else "mysql.service";
@@ -496,14 +528,14 @@ let
           callSql = e:
               if cfg.database.type == "pgsql" then ''
                   ${optionalString (cfg.database.password != null) "PGPASSWORD=${cfg.database.password}"} \
-                  ${pkgs.postgresql95}/bin/psql \
+                  ${pkgs.sudo}/bin/sudo -u ${cfg.user} ${config.services.postgresql.package}/bin/psql \
                     -U ${cfg.database.user} \
                     ${optionalString (cfg.database.host != null) "-h ${cfg.database.host} --port ${toString dbPort}"} \
                     -c '${e}' \
                     ${cfg.database.name}''
 
               else if cfg.database.type == "mysql" then ''
-                  echo '${e}' | ${pkgs.mysql}/bin/mysql \
+                  echo '${e}' | ${pkgs.sudo}/bin/sudo -u ${cfg.user} ${config.services.mysql.package}/bin/mysql \
                     -u ${cfg.database.user} \
                     ${optionalString (cfg.database.password != null) "-p${cfg.database.password}"} \
                     ${optionalString (cfg.database.host != null) "-h ${cfg.database.host} -P ${toString dbPort}"} \
@@ -515,12 +547,30 @@ let
           rm -rf "${cfg.root}/*"
           mkdir -m 755 -p "${cfg.root}"
           cp -r "${pkgs.tt-rss}/"* "${cfg.root}"
+          ${optionalString (cfg.pluginPackages != []) ''
+            for plugin in ${concatStringsSep " " cfg.pluginPackages}; do
+              cp -r "$plugin"/* "${cfg.root}/plugins.local/"
+            done
+          ''}
+          ${optionalString (cfg.themePackages != []) ''
+            for theme in ${concatStringsSep " " cfg.themePackages}; do
+              cp -r "$theme"/* "${cfg.root}/themes.local/"
+            done
+          ''}
           ln -sf "${tt-rss-config}" "${cfg.root}/config.php"
           chown -R "${cfg.user}" "${cfg.root}"
           chmod -R 755 "${cfg.root}"
         ''
 
         + (optionalString (cfg.database.type == "pgsql") ''
+          ${optionalString (cfg.database.host == null && cfg.database.password == null) ''
+            if ! [ -e ${cfg.root}/.db-created ]; then
+              ${pkgs.sudo}/bin/sudo -u ${config.services.postgresql.superUser} ${config.services.postgresql.package}/bin/createuser ${cfg.database.user}
+              ${pkgs.sudo}/bin/sudo -u ${config.services.postgresql.superUser} ${config.services.postgresql.package}/bin/createdb -O ${cfg.database.user} ${cfg.database.name}
+              touch ${cfg.root}/.db-created
+            fi
+          ''}
+
           exists=$(${callSql "select count(*) > 0 from pg_tables where tableowner = user"} \
           | tail -n+3 | head -n-2 | sed -e 's/[ \n\t]*//')
 
@@ -553,6 +603,29 @@ let
         wantedBy = [ "multi-user.target" ];
         requires = ["${dbService}"];
         after = ["network.target" "${dbService}"];
+    };
+
+    services.mysql = optionalAttrs (cfg.database.type == "mysql") {
+      enable = true;
+      package = mkDefault pkgs.mysql;
+      ensureDatabases = [ cfg.database.name ];
+      ensureUsers = [
+        {
+          name = cfg.user;
+          ensurePermissions = {
+            "${cfg.database.name}.*" = "ALL PRIVILEGES";
+          };
+        }
+      ];
+    };
+
+    services.postgresql = optionalAttrs (cfg.database.type == "pgsql") {
+      enable = mkDefault true;
+    };
+
+    users = optionalAttrs (cfg.user == "tt_rss") {
+      users.tt_rss.group = "tt_rss";
+      groups.tt_rss = {};
     };
   };
 }

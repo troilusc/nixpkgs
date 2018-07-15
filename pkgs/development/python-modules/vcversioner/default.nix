@@ -1,7 +1,6 @@
 { stdenv, buildPythonPackage, fetchPypi }:
 
 buildPythonPackage rec {
-  name = "${pname}-${version}";
   pname = "vcversioner";
   version = "2.16.0.0";
 
@@ -13,6 +12,6 @@ buildPythonPackage rec {
   meta = with stdenv.lib; {
     description = "take version numbers from version control";
     homepage = https://github.com/habnabit/vcversioner;
-    licenses = licenses.isc;
+    license = licenses.isc;
   };
 }

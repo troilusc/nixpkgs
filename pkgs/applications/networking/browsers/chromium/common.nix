@@ -1,4 +1,4 @@
-{ stdenv, ninja, which, nodejs, fetchurl, gnutar
+{ stdenv, ninja, which, nodejs, fetchurl, fetchpatch, gnutar
 
 # default dependencies
 , bzip2, flac, speex, libopus
@@ -11,8 +11,8 @@
 , nspr, systemd, kerberos
 , utillinux, alsaLib
 , bison, gperf
-, glib, gtk2, gtk3, dbus_glib
-, libXScrnSaver, libXcursor, libXtst, mesa
+, glib, gtk2, gtk3, dbus-glib
+, libXScrnSaver, libXcursor, libXtst, libGLU_combined
 , protobuf, speechd, libXdamage, cups
 , ffmpeg, harfbuzz, harfbuzz-icu, libxslt, libxml2
 
@@ -22,10 +22,9 @@
 
 # package customization
 , enableNaCl ? false
-, enableHotwording ? false
 , enableWideVine ? false
 , gnomeSupport ? false, gnome ? null
-, gnomeKeyringSupport ? false, libgnome_keyring3 ? null
+, gnomeKeyringSupport ? false, libgnome-keyring3 ? null
 , proprietaryCodecs ? true
 , cupsSupport ? true
 , pulseSupport ? false, libpulseaudio ? null
@@ -43,6 +42,15 @@ let
   # The additional attributes for creating derivations based on the chromium
   # source tree.
   extraAttrs = buildFun base;
+
+  gentooPatch = name: sha256: fetchpatch {
+    url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/www-client/chromium/files/${name}";
+    inherit sha256;
+  };
+  githubPatch = commit: sha256: fetchpatch {
+    url = "https://github.com/chromium/chromium/commit/${commit}.patch";
+    inherit sha256;
+  };
 
   mkGnFlags =
     let
@@ -64,9 +72,8 @@ let
     # "libjpeg" # fails with multiple undefined references to chromium_jpeg_*
     # "re2" # fails with linker errors
     # "ffmpeg" # https://crbug.com/731766
-  ] ++ optionals (versionRange "62" "63") [
-    "harfbuzz-ng" # in versions over 63 harfbuzz and freetype are being built together
-                  # so we can't build with one from system and other from source
+    # "harfbuzz-ng" # in versions over 63 harfbuzz and freetype are being built together
+                    # so we can't build with one from system and other from source
   ];
 
   opusWithCustomModes = libopus.override {
@@ -80,9 +87,8 @@ let
     xdg_utils yasm minizip libwebp
     libusb1 re2 zlib
     ffmpeg libxslt libxml2
-  ] ++ optionals (versionRange "62" "63") [
-    harfbuzz-icu # in versions over 63 harfbuzz and freetype are being built together
-                 # so we can't build with one from system and other from source
+    # harfbuzz-icu # in versions over 63 harfbuzz and freetype are being built together
+                   # so we can't build with one from system and other from source
   ];
 
   # build paths and release info
@@ -122,33 +128,28 @@ let
       nspr nss systemd
       utillinux alsaLib
       bison gperf kerberos
-      glib gtk2 gtk3 dbus_glib
-      libXScrnSaver libXcursor libXtst mesa
+      glib gtk2 gtk3 dbus-glib
+      libXScrnSaver libXcursor libXtst libGLU_combined
       pciutils protobuf speechd libXdamage
-    ] ++ optional gnomeKeyringSupport libgnome_keyring3
+    ] ++ optional gnomeKeyringSupport libgnome-keyring3
       ++ optionals gnomeSupport [ gnome.GConf libgcrypt ]
       ++ optionals cupsSupport [ libgcrypt cups ]
       ++ optional pulseSupport libpulseaudio;
 
     patches = [
-      ./patches/nix_plugin_paths_52.patch
-      # To enable ChromeCast, go to chrome://flags and set "Load Media Router Component Extension" to Enabled
-      # Fixes Chromecast: https://bugs.chromium.org/p/chromium/issues/detail?id=734325
-      ./patches/fix_network_api_crash.patch
-    ] # As major versions are added, you can trawl the gentoo and arch repos at
+      # As major versions are added, you can trawl the gentoo and arch repos at
       # https://gitweb.gentoo.org/repo/gentoo.git/plain/www-client/chromium/
       # https://git.archlinux.org/svntogit/packages.git/tree/trunk?h=packages/chromium
       # for updated patches and hints about build flags
-      ++ optionals (versionRange "62" "63") [
-      ./patches/chromium-gn-bootstrap-r17.patch
-      ./patches/chromium-gcc5-r3.patch
-      ./patches/chromium-glibc2.26-r1.patch
-    ]
-      ++ optionals (versionAtLeast version "63") [
-      ./patches/chromium-gcc5-r4.patch
-      ./patches/constexpr-fix.patch
-    ]
-      ++ optional enableWideVine ./patches/widevine.patch;
+    # (gentooPatch "<patch>" "0000000000000000000000000000000000000000000000000000000000000000")
+      ./patches/fix-openh264.patch
+      ./patches/fix-freetype.patch
+    ]  ++ optionals (versionRange "66" "68") [
+      ./patches/nix_plugin_paths_52.patch
+    ]  ++ optionals (versionAtLeast version "68") [
+      ./patches/nix_plugin_paths_68.patch
+      (githubPatch "56cb5f7da1025f6db869e840ed34d3b98b9ab899" "04mp5r1yvdvdx6m12g3lw3z51bzh7m3gr73mhblkn4wxdbvi3dcs")
+    ] ++ optional enableWideVine ./patches/widevine.patch;
 
     postPatch = ''
       # We want to be able to specify where the sandbox is via CHROME_DEVEL_SANDBOX
@@ -156,6 +157,9 @@ let
         --replace \
           'return sandbox_binary;' \
           'return base::FilePath(GetDevelSandboxPath());'
+
+      sed -i -e 's@"\(#!\)\?.*xdg-@"\1${xdg_utils}/bin/xdg-@' \
+        chrome/browser/shell_integration_linux.cc
 
       sed -i -e '/lib_loader.*Load/s!"\(libudev\.so\)!"${systemd.lib}/lib/\1!' \
         device/udev_linux/udev?_loader.cc
@@ -185,8 +189,10 @@ let
       tar -xJf ${freetype_source}
 
       # remove unused third-party
+      # in third_party/crashpad third_party/zlib contains just a header-adapter
       for lib in ${toString gnSystemLibraries}; do
         find -type f -path "*third_party/$lib/*"     \
+            \! -path "*third_party/crashpad/crashpad/third_party/zlib/*"  \
             \! -path "*third_party/$lib/chromium/*"  \
             \! -path "*third_party/$lib/google/*"    \
             \! -path "*base/third_party/icu/*"       \
@@ -194,6 +200,9 @@ let
             \! -regex '.*\.\(gn\|gni\|isolate\|py\)' \
             -delete
       done
+    '' + optionalString stdenv.isAarch64 ''
+      substituteInPlace build/toolchain/linux/BUILD.gn \
+        --replace 'toolprefix = "aarch64-linux-gnu-"' 'toolprefix = ""'
     '';
 
     gnFlags = mkGnFlags ({
@@ -205,10 +214,8 @@ let
       proprietary_codecs = false;
       use_sysroot = false;
       use_gnome_keyring = gnomeKeyringSupport;
-      use_gconf = gnomeSupport;
       use_gio = gnomeSupport;
       enable_nacl = enableNaCl;
-      enable_hotwording = enableHotwording;
       enable_widevine = enableWideVine;
       use_cups = cupsSupport;
 
@@ -248,7 +255,10 @@ let
       libExecPath="${libExecPath}"
       python build/linux/unbundle/replace_gn_files.py \
         --system-libraries ${toString gnSystemLibraries}
-      gn gen --args=${escapeShellArg gnFlags} out/Release
+      gn gen --args=${escapeShellArg gnFlags} out/Release | tee gn-gen-outputs.txt
+
+      # Fail if `gn gen` contains a WARNING.
+      grep -o WARNING gn-gen-outputs.txt && echo "Found gn WARNING, exiting nix build" && exit 1
 
       runHook postConfigure
     '';
@@ -263,6 +273,12 @@ let
         ninja -C "${buildPath}"  \
           -j$(( ($NIX_BUILD_CORES+1) / 2 )) -l$(( $NIX_BUILD_CORES+1 )) \
           "${target}"
+        (
+          source chrome/installer/linux/common/installer.include
+          PACKAGE=$packageName
+          MENUNAME="Chromium"
+          process_template chrome/app/resources/manpage.1.in "${buildPath}/chrome.1"
+        )
       '' + optionalString (target == "mksnapshot" || target == "chrome") ''
         paxmark m "${buildPath}/${target}"
       '';

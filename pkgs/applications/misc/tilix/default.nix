@@ -1,26 +1,29 @@
 { stdenv, fetchFromGitHub, autoreconfHook, pkgconfig, dmd, gnome3, dbus
-, gsettings_desktop_schemas, libsecret, desktop_file_utils, gettext, gtkd
+, gsettings-desktop-schemas, libsecret, desktop-file-utils, gettext, gtkd
 , perlPackages, wrapGAppsHook, xdg_utils }:
 
 stdenv.mkDerivation rec {
   name = "tilix-${version}";
-  version = "1.6.4";
+  version = "1.8.1";
 
   src = fetchFromGitHub {
     owner = "gnunn1";
     repo = "tilix";
     rev = "${version}";
-    sha256 = "1vqi68jlbbaky1569kd4lr6p02zsiv7v2rfb8j1pzwj7gydblaac";
+    sha256 = "19dx3hlj40cqwph98pcifkm6axfszfr0v9k6sr3caw4ycml84ci1";
   };
 
   nativeBuildInputs = [
-    autoreconfHook dmd desktop_file_utils perlPackages.Po4a pkgconfig xdg_utils
+    autoreconfHook dmd desktop-file-utils perlPackages.Po4a pkgconfig xdg_utils
     wrapGAppsHook
   ];
-  buildInputs = [ gnome3.dconf gettext gsettings_desktop_schemas gtkd dbus ];
+  buildInputs = [ gnome3.dconf gettext gsettings-desktop-schemas gtkd dbus ];
 
   preBuild = ''
-    makeFlagsArray=(PERL5LIB="${perlPackages.Po4a}/lib/perl5")
+    makeFlagsArray=(
+      PERL5LIB="${perlPackages.Po4a}/lib/perl5"
+      DCFLAGS='-O -inline -release -version=StdLoggerDisableTrace'
+    )
   '';
 
   postInstall = with gnome3; ''
@@ -37,8 +40,8 @@ stdenv.mkDerivation rec {
   meta = with stdenv.lib; {
     description = "Tiling terminal emulator following the Gnome Human Interface Guidelines.";
     homepage = https://gnunn1.github.io/tilix-web;
-    licence = licenses.mpl20;
-    maintainer = with maintainers; [ midchildan ];
+    license = licenses.mpl20;
+    maintainers = with maintainers; [ midchildan ];
     platforms = platforms.linux;
   };
 }

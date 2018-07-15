@@ -1,7 +1,10 @@
 { stdenv, fetchurl, buildPythonPackage, isPy3k }:
 
 buildPythonPackage rec {
-  name = "Pyro-3.16";
+  pname = "Pyro";
+  version = "3.16";
+  name = pname + "-" + version;
+
   disabled = isPy3k;
 
   src = fetchurl {
@@ -11,7 +14,7 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "Distributed object middleware for Python (IPC/RPC)";
-    homepage = http://pythonhosted.org/Pyro/;
+    homepage = https://pythonhosted.org/Pyro/;
     license = licenses.mit;
     platforms = platforms.unix;
     maintainers = with maintainers; [ bjornfor ];

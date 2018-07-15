@@ -1,14 +1,15 @@
 { stdenv, fetchFromGitHub, pythonPackages, httpie }:
 
 pythonPackages.buildPythonApplication rec {
-  version = "0.10.2";
-  name = "http-prompt";
+  pname = "http-prompt";
+  version = "0.11.2";
+  name = "${pname}-${version}";
 
   src = fetchFromGitHub {
     rev = "v${version}";
     repo = "http-prompt";
     owner = "eliangcs";
-    sha256 = "0c03n1ll61zd4f60kzih3skl0hspck5hhpcf74h5l6v5as7qdbi2";
+    sha256 = "130w3wkb5jbiwm5w0b470nd50gf30vrknmf3knhlgdxdmfb30zjz";
   };
 
   propagatedBuildInputs = with pythonPackages; [
@@ -20,11 +21,15 @@ pythonPackages.buildPythonApplication rec {
     six
   ];
 
+  checkPhase = ''
+    $out/bin/${pname} --version | grep -q "${version}"
+  '';
+
   meta = with stdenv.lib; {
     description = "An interactive command-line HTTP client featuring autocomplete and syntax highlighting";
     homepage = https://github.com/eliangcs/http-prompt;
     license = licenses.mit;
-    maintainers = with maintainers; [ matthiasbeyer ];
+    maintainers = with maintainers; [ ];
     platforms = platforms.linux; # can only test on linux
   };
 }

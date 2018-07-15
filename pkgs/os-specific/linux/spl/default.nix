@@ -1,20 +1,19 @@
 { fetchFromGitHub, stdenv, autoreconfHook, coreutils, gawk
-, configFile ? "all"
 
 # Kernel dependencies
-, kernel ? null
+, kernel
 }:
 
 with stdenv.lib;
 
 let
-  buildKernel = any (n: n == configFile) [ "kernel" "all" ];
-  buildUser = any (n: n == configFile) [ "user" "all" ];
   common = { version
     , sha256
     , rev ? "spl-${version}"
+    , broken ? false
+    , patches ? []
     } @ args : stdenv.mkDerivation rec {
-      name = "spl-${configFile}-${version}${optionalString buildKernel "-${kernel.version}"}";
+      name = "spl-${version}-${kernel.version}";
 
       src = fetchFromGitHub {
         owner = "zfsonlinux";
@@ -22,11 +21,11 @@ let
         inherit rev sha256;
       };
 
-      patches = [ ./const.patch ./install_prefix.patch ];
+      inherit patches;
 
-      nativeBuildInputs = [ autoreconfHook ];
+      nativeBuildInputs = [ autoreconfHook ] ++ kernel.moduleBuildDependencies;
 
-      hardeningDisable = [ "pic" ];
+      hardeningDisable = [ "fortify" "stackprotector" "pic" ];
 
       preConfigure = ''
         substituteInPlace ./module/spl/spl-generic.c --replace /usr/bin/hostid hostid
@@ -36,8 +35,7 @@ let
       '';
 
       configureFlags = [
-        "--with-config=${configFile}"
-      ] ++ optionals buildKernel [
+        "--with-config=kernel"
         "--with-linux=${kernel.dev}/lib/modules/${kernel.modDirVersion}/source"
         "--with-linux-obj=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
       ];
@@ -52,6 +50,8 @@ let
           kernel.
         '';
 
+        inherit broken;
+
         homepage = http://zfsonlinux.org/;
         platforms = platforms.linux;
         license = licenses.gpl2Plus;
@@ -59,17 +59,25 @@ let
       };
   };
 in
-  assert any (n: n == configFile) [ "kernel" "user" "all" ];
-  assert buildKernel -> kernel != null;
+  assert kernel != null;
 {
     splStable = common {
-      version = "0.7.2";
-      sha256 = "10rq0npjlp09xjdgn9lc3wm310dqc71j0wgxwj92ncf9r61zf445";
+      version = "0.7.9";
+      sha256 = "0540m1dv9jvrzk9kw61glg0h0cwj976mr9zb42y3nh17k47ywff0";
+      patches = [ ./install_prefix-0.7.9.patch ];
     };
 
     splUnstable = common {
-      version = "2017-10-16";
-      rev = "28920ea3346c1c905c5f727ea3e54297e6257568";
-      sha256 = "0m42na009ivb9q9gz15ra94wqx5xdw18waanm56aqzrjxbqqa3ll";
+      version = "2018-05-07";
+      rev = "1149b62d20b7ed9d8ae25d5da7a06213d79b7602";
+      sha256 = "07qlx7l23y696gzyy7ynly7n1141w66y21gkmxiia2xwldj8klkx";
+      patches = [ ./install_prefix.patch ];
+    };
+
+    splLegacyCrypto = common {
+      version = "2018-01-24";
+      rev = "23602fdb39e1254c669707ec9d2d0e6bcdbf1771";
+      sha256 = "09py2dwj77f6s2qcnkwdslg5nxb3hq2bq39zpxpm6msqyifhl69h";
+      patches = [ ./install_prefix.patch ];
     };
 }

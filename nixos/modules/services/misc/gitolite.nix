@@ -140,7 +140,7 @@ in
       push( @{$RC{ENABLE}}, 'git-annex-shell ua');
     '';
 
-    users.extraUsers.${cfg.user} = {
+    users.users.${cfg.user} = {
       description     = "Gitolite user";
       home            = cfg.dataDir;
       createHome      = true;
@@ -148,7 +148,7 @@ in
       group           = cfg.group;
       useDefaultShell = true;
     };
-    users.extraGroups."${cfg.group}".gid = config.ids.gids.gitolite;
+    users.groups."${cfg.group}".gid = config.ids.gids.gitolite;
 
     systemd.services."gitolite-init" = {
       description = "Gitolite initialization";
@@ -207,7 +207,7 @@ in
             gitolite setup -pk ${pubkeyFile}
           fi
           if [ -n "${hooks}" ]; then
-            cp ${hooks} .gitolite/hooks/common/
+            cp -f ${hooks} .gitolite/hooks/common/
             chmod +x .gitolite/hooks/common/*
           fi
           gitolite setup # Upgrade if needed

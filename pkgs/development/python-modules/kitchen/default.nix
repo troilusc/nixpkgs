@@ -2,7 +2,6 @@
 buildPythonPackage rec {
   pname = "kitchen";
   version = "1.2.5";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -12,6 +11,6 @@ buildPythonPackage rec {
   meta = with stdenv.lib; {
     description = "Kitchen contains a cornucopia of useful code";
     license = licenses.lgpl2;
-    maintainers = with maintainers; [ mornfall ];
+    maintainers = with maintainers; [ ];
   };
 }

@@ -11,7 +11,7 @@
 , freetype
 , gdk_pixbuf
 , glib
-, gnome2
+, gnome3
 , gtk3
 , libX11
 , libxcb
@@ -32,12 +32,13 @@
 , pango
 , stdenv
 , systemd
+, at-spi2-atk
 }:
 
 let
 
   mirror = https://get.geo.opera.com/pub/opera/desktop;
-  version = "46.0.2597.39";
+  version = "53.0.2907.99";
 
   rpath = stdenv.lib.makeLibraryPath [
 
@@ -54,7 +55,7 @@ let
     freetype.out
     gdk_pixbuf.out
     glib.out
-    gnome2.GConf.out
+    gnome3.gconf
     gtk3.out
     libX11.out
     libXScrnSaver.out
@@ -81,25 +82,18 @@ let
 
     # Works fine without this except there is no sound.
     libpulseaudio.out
+
+    at-spi2-atk
   ];
 
 in stdenv.mkDerivation {
 
   name = "opera-${version}";
 
-  src =
-    #if stdenv.system == "i686-linux" then
-    #  fetchurl {
-    #    url = "${mirror}/${version}/linux/opera-stable_${version}_i386.deb";
-    #    sha256 = "...";
-    #  }
-    #else 
-    if stdenv.system == "x86_64-linux" then
-      fetchurl {
-        url = "${mirror}/${version}/linux/opera-stable_${version}_amd64.deb";
-        sha256 = "1ladvqilm5rr222wjybvribnyii2l0p8jbsd10xr06wps63g1kia";
-      }
-    else throw "Opera is not supported on ${stdenv.system} (only x86_64 linux is supported)";
+  src = fetchurl {
+    url = "${mirror}/${version}/linux/opera-stable_${version}_amd64.deb";
+    sha256 = "0fih5047xv275rmbcr2drji81wxi6p0kyp172mmn328g3pzddmwx";
+  };
 
   unpackCmd = "${dpkg}/bin/dpkg-deb -x $curSrc .";
 
@@ -123,6 +117,7 @@ in stdenv.mkDerivation {
   meta = {
     homepage = http://www.opera.com;
     description = "Web browser";
+    platforms = [ "x86_64-linux" ];
     license = stdenv.lib.licenses.unfree;
   };
 }

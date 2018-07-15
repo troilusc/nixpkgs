@@ -3,11 +3,11 @@
 stdenv.mkDerivation rec {
   name = "libivykis-${version}";
 
-  version = "0.41";
+  version = "0.42.2";
 
   src = fetchurl {
     url = "mirror://sourceforge/libivykis/${version}/ivykis-${version}.tar.gz";
-    sha256 = "1igk3svf36i5xgb6ipc507xpj6zjm4xi9j1j2cdqaachllwlb4rc";
+    sha256 = "14vb613j4xas70wr7g5z9c9z871xhayd4zliywwf88myd41jcsw8";
   };
 
   nativeBuildInputs = [ autoreconfHook pkgconfig ];

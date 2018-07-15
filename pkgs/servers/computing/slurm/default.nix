@@ -1,17 +1,31 @@
-{ stdenv, fetchurl, pkgconfig, libtool, curl, python, munge, perl, pam, openssl
+{ stdenv, fetchFromGitHub, pkgconfig, libtool, curl
+, python, munge, perl, pam, openssl
 , ncurses, mysql, gtk2, lua, hwloc, numactl
+, readline, freeipmi, libssh2, xorg
+# enable internal X11 support via libssh2
+, enableX11 ? true
 }:
 
 stdenv.mkDerivation rec {
   name = "slurm-${version}";
-  version = "17.02.6";
+  version = "17.11.7";
 
-  src = fetchurl {
-    url = "https://www.schedmd.com/downloads/latest/slurm-17.02.6.tar.bz2";
-    sha256 = "1sp4xg15jc569r6dh61svgk2fmy3ndcgr5358yryajslf1w14mzh";
+  # N.B. We use github release tags instead of https://www.schedmd.com/downloads.php
+  # because the latter does not keep older releases.
+  src = fetchFromGitHub {
+    owner = "SchedMD";
+    repo = "slurm";
+    # The release tags use - instead of ., and have an extra -1 suffix.
+    rev = "${builtins.replaceStrings ["."] ["-"] name}-1";
+    sha256 = "00dgirjd75i1x6pj80avp18hx5gr3dsnh13vbkqbf0iwpd72qyhp";
   };
 
   outputs = [ "out" "dev" ];
+
+  prePatch = stdenv.lib.optional enableX11 ''
+    substituteInPlace src/common/x11_util.c \
+        --replace '"/usr/bin/xauth"' '"${xorg.xauth}/bin/xauth"'
+  '';
 
   # nixos test fails to start slurmd with 'undefined symbol: slurm_job_preempt_mode'
   # https://groups.google.com/forum/#!topic/slurm-devel/QHOajQ84_Es
@@ -20,14 +34,20 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ pkgconfig libtool ];
   buildInputs = [
-    curl python munge perl pam openssl mysql.lib ncurses gtk2 lua hwloc numactl
-  ];
+    curl python munge perl pam openssl
+      mysql.connector-c ncurses gtk2
+      lua hwloc numactl readline freeipmi
+  ] ++ stdenv.lib.optionals enableX11 [ libssh2 xorg.xauth ];
 
-  configureFlags =
+  configureFlags = with stdenv.lib;
     [ "--with-munge=${munge}"
       "--with-ssl=${openssl.dev}"
+      "--with-hwloc=${hwloc.dev}"
+      "--with-freeipmi=${freeipmi}"
       "--sysconfdir=/etc/slurm"
-    ] ++ stdenv.lib.optional (gtk2 == null)  "--disable-gtktest";
+    ] ++ (optional (gtk2 == null)  "--disable-gtktest")
+      ++ (optional enableX11 "--with-libssh2=${libssh2.dev}");
+
 
   preConfigure = ''
     patchShebangs ./doc/html/shtml2html.py
@@ -38,11 +58,13 @@ stdenv.mkDerivation rec {
     rm -f $out/lib/*.la $out/lib/slurm/*.la
   '';
 
+  enableParallelBuilding = true;
+
   meta = with stdenv.lib; {
     homepage = http://www.schedmd.com/;
     description = "Simple Linux Utility for Resource Management";
     platforms = platforms.linux;
     license = licenses.gpl2;
-    maintainers = [ maintainers.jagajaga ];
+    maintainers = with maintainers; [ jagajaga markuskowa ];
   };
 }

@@ -18,7 +18,7 @@ import ./make-test.nix ({ pkgs, ...} : {
         # should have no effect
         services.jenkinsSlave.enable = true;
 
-        users.extraUsers.jenkins.extraGroups = [ "users" ];
+        users.users.jenkins.extraGroups = [ "users" ];
 
         systemd.services.jenkins.serviceConfig.TimeoutStartSec = "6min";
       };
@@ -27,7 +27,7 @@ import ./make-test.nix ({ pkgs, ...} : {
       { config, pkgs, ... }:
       { services.jenkinsSlave.enable = true;
 
-        users.extraUsers.jenkins.extraGroups = [ "users" ];
+        users.users.jenkins.extraGroups = [ "users" ];
       };
 
   };
@@ -36,6 +36,9 @@ import ./make-test.nix ({ pkgs, ...} : {
     startAll;
 
     $master->waitForUnit("jenkins");
+
+    $master->mustSucceed("curl http://localhost:8080 | grep 'Authentication required'");
+
     print $master->execute("sudo -u jenkins groups");
     $master->mustSucceed("sudo -u jenkins groups | grep jenkins | grep users");
 

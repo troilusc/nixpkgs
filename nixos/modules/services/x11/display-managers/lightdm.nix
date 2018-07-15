@@ -9,6 +9,10 @@ let
   xEnv = config.systemd.services."display-manager".environment;
   cfg = dmcfg.lightdm;
 
+  dmDefault = xcfg.desktopManager.default;
+  wmDefault = xcfg.windowManager.default;
+  hasDefaultUserSession = dmDefault != "none" || wmDefault != "none";
+
   inherit (pkgs) stdenv lightdm writeScript writeText;
 
   # lightdm runs with clearenv(), but we need a few things in the enviornment for X to startup
@@ -38,7 +42,7 @@ let
     ''
       [LightDM]
       ${optionalString cfg.greeter.enable ''
-        greeter-user = ${config.users.extraUsers.lightdm.name}
+        greeter-user = ${config.users.users.lightdm.name}
         greeters-directory = ${cfg.greeter.package}
       ''}
       sessions-directory = ${dmcfg.session.desktops}
@@ -54,14 +58,13 @@ let
         autologin-user-timeout = ${toString cfg.autoLogin.timeout}
         autologin-session = ${defaultSessionName}
       ''}
+      ${optionalString hasDefaultUserSession ''
+        user-session=${defaultSessionName}
+      ''}
       ${cfg.extraSeatDefaults}
     '';
 
-  defaultSessionName =
-    let
-      dm = xcfg.desktopManager.default;
-      wm = xcfg.windowManager.default;
-    in dm + optionalString (wm != "none") ("+" + wm);
+  defaultSessionName = dmDefault + optionalString (wmDefault != "none") ("+" + wmDefault);
 in
 {
   # Note: the order in which lightdm greeter modules are imported
@@ -69,6 +72,7 @@ in
   # preferred.
   imports = [
     ./lightdm-greeters/gtk.nix
+    ./lightdm-greeters/mini.nix
   ];
 
   options = {
@@ -179,6 +183,14 @@ in
           default session: ${defaultSessionName} is not valid.
         '';
       }
+      { assertion = hasDefaultUserSession -> elem defaultSessionName dmcfg.session.names;
+        message = ''
+          services.xserver.desktopManager.default and
+          services.xserver.windowMananger.default are not set to valid
+          values. The current default session: ${defaultSessionName}
+          is not valid.
+        '';
+      }
       { assertion = !cfg.greeter.enable -> (cfg.autoLogin.enable && cfg.autoLogin.timeout == 0);
         message = ''
           LightDM can only run without greeter if automatic login is enabled and the timeout for it
@@ -190,7 +202,7 @@ in
     services.xserver.displayManager.slim.enable = false;
 
     services.xserver.displayManager.job = {
-      logsXsession = true;
+      logToFile = true;
 
       # lightdm relaunches itself via just `lightdm`, so needs to be on the PATH
       execCmd = ''
@@ -240,14 +252,14 @@ in
         session  include   lightdm
     '';
 
-    users.extraUsers.lightdm = {
+    users.users.lightdm = {
       createHome = true;
       home = "/var/lib/lightdm-data";
       group = "lightdm";
       uid = config.ids.uids.lightdm;
     };
 
-    users.extraGroups.lightdm.gid = config.ids.gids.lightdm;
+    users.groups.lightdm.gid = config.ids.gids.lightdm;
     services.xserver.tty     = null; # We might start multiple X servers so let the tty increment themselves..
     services.xserver.display = null; # We specify our own display (and logfile) in xserver-wrapper up there
   };

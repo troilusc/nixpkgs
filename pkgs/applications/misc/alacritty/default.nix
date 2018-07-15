@@ -1,4 +1,5 @@
 { stdenv,
+  lib,
   fetchgit,
   rustPlatform,
   cmake,
@@ -12,7 +13,17 @@
   libXcursor,
   libXxf86vm,
   libXi,
-  xclip }:
+  libXrandr,
+  libGL,
+  xclip,
+  # Darwin Frameworks
+  AppKit,
+  CoreFoundation,
+  CoreGraphics,
+  CoreServices,
+  CoreText,
+  Foundation,
+  OpenGL }:
 
 with rustPlatform;
 
@@ -24,43 +35,66 @@ let
     libX11
     libXcursor
     libXxf86vm
+    libXrandr
+    libGL
     libXi
   ];
-in
-
-buildRustPackage rec {
+  darwinFrameworks = [
+    AppKit
+    CoreFoundation
+    CoreGraphics
+    CoreServices
+    CoreText
+    Foundation
+    OpenGL
+  ];
+in buildRustPackage rec {
   name = "alacritty-unstable-${version}";
-  version = "2017-10-22";
+  version = "2018-05-09";
 
   # At the moment we cannot handle git dependencies in buildRustPackage.
   # This fork only replaces rust-fontconfig/libfontconfig with a git submodules.
   src = fetchgit {
     url = https://github.com/Mic92/alacritty.git;
     rev = "rev-${version}";
-    sha256 = "02wvwi72hnqmy12n0b248wzhajni9ipyayz6vnn3ryhnrccrrp7j";
+    sha256 = "0mgi4niy40zz80k2ammbzdw9d8flvfkwlxkjnbpwrrldd0sj8dlz";
     fetchSubmodules = true;
   };
 
-  cargoSha256 = "14bmm1f7hqh8i4mpb6ljh7szrm4g6mplzpq9zbgjrgxnc01w3s0i";
+  cargoSha256 = "0d6bqfnwqfxqllrf00p1djlxdvnhrahgnyqv842qjn94j3wf0fym";
 
-  buildInputs = [
+  nativeBuildInputs = [
     cmake
     makeWrapper
     pkgconfig
-  ] ++ rpathLibs;
+  ];
+
+  buildInputs = rpathLibs
+             ++ lib.optionals stdenv.isDarwin darwinFrameworks;
 
   postPatch = ''
     substituteInPlace copypasta/src/x11.rs \
       --replace Command::new\(\"xclip\"\) Command::new\(\"${xclip}/bin/xclip\"\)
   '';
 
+  postBuild = lib.optionalString stdenv.isDarwin "make app";
+
   installPhase = ''
     runHook preInstall
 
     install -D target/release/alacritty $out/bin/alacritty
-    patchelf --set-rpath "${stdenv.lib.makeLibraryPath rpathLibs}" $out/bin/alacritty
 
+  '' + (if stdenv.isDarwin then ''
+    mkdir $out/Applications
+    cp -r target/release/osx/Alacritty.app $out/Applications/Alacritty.app
+  '' else ''
     install -D Alacritty.desktop $out/share/applications/alacritty.desktop
+    patchelf --set-rpath "${stdenv.lib.makeLibraryPath rpathLibs}" $out/bin/alacritty
+  '') + ''
+
+    install -D alacritty-completions.zsh "$out/share/zsh/site-functions/_alacritty"
+    install -D alacritty-completions.bash "$out/etc/bash_completion.d/alacritty-completions.bash"
+    install -D alacritty-completions.fish "$out/share/fish/vendor_completions.d/alacritty.fish"
 
     runHook postInstall
   '';
@@ -72,6 +106,5 @@ buildRustPackage rec {
     homepage = https://github.com/jwilm/alacritty;
     license = with licenses; [ asl20 ];
     maintainers = with maintainers; [ mic92 ];
-    platforms = platforms.linux;
   };
 }

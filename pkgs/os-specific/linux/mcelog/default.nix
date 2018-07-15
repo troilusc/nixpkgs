@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   name = "mcelog-${version}";
-  version = "153";
+  version = "159";
 
   src = fetchFromGitHub {
     owner  = "andikleen";
     repo   = "mcelog";
     rev    = "v${version}";
-    sha256 = "1wz55dzqdiam511d6p1958al6vzlhrhs73s7gly0mzm6kpji0gxa";
+    sha256 = "1w8y4igxi48r2d9s6g9fm1bgmsga94gfz6x0xaln6rhvbgi318xg";
   };
 
   postPatch = ''
@@ -47,6 +47,5 @@ stdenv.mkDerivation rec {
     homepage = http://mcelog.org/;
     license = licenses.gpl2;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ nckx ];
   };
 }

@@ -1,9 +1,8 @@
-{ stdenv, lib, buildPythonPackage, fetchPypi, isPy3k, dns, idna, ipaddress }:
+{ stdenv, lib, buildPythonPackage, fetchPypi, isPy3k, dnspython, idna, ipaddress }:
 
 buildPythonPackage rec {
   pname = "email_validator";
   version = "1.0.2";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -13,7 +12,7 @@ buildPythonPackage rec {
   doCheck = false;
 
   propagatedBuildInputs = [
-    dns
+    dnspython
     idna
   ] ++ (if isPy3k then [ ] else [ ipaddress ]);
 

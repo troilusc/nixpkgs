@@ -1,14 +1,14 @@
 { stdenv, fetchFromGitHub, fftw, ncurses5, libpulseaudio, makeWrapper }:
 
 stdenv.mkDerivation rec {
-  version = "1.5";
+  version = "1.7";
   name = "cli-visualizer-${version}";
 
   src = fetchFromGitHub {
     owner = "dpayne";
     repo = "cli-visualizer";
     rev = version;
-    sha256 = "18qv4ya64qmczq94dnynrnzn7pwhmzbn14r05qcvbbwv7r8gclzs";
+    sha256 = "06z6vj87xjmacppcxvgm47wby6mv1hnbqav8lpdk9v5s1hmmp1cr";
   };
 
   postPatch = ''
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
     homepage = https://github.com/dpayne/cli-visualizer;
     description = "CLI based audio visualizer";
     license = stdenv.lib.licenses.mit;
-    maintainers = [ stdenv.lib.maintainers.matthiasbeyer ];
+    maintainers = with stdenv.lib.maintainers; [ ];
     platforms = with stdenv.lib.platforms; linux;
   };
 }

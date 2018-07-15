@@ -6,7 +6,7 @@ libxslt,
 libusb,
 sane-backends,
 rpm, cpio,
-eject,
+getopt,
 patchelf, gcc
 }:
 
@@ -25,6 +25,38 @@ in
 # adding a plugin for another printer shouldn't be too difficult, but you need the firmware to test...
 
 let plugins = {
+  x770 =   stdenv.mkDerivation rec {
+    name = "iscan-gt-x770-bundle";
+    version = "1.0.1";
+    pluginVersion = "2.1.2-1";
+
+    buildInputs = [ patchelf rpm ];
+    src = fetchurl {
+      url = "https://download2.ebz.epson.net/iscan/plugin/gt-x770/rpm/x64/iscan-gt-x770-bundle-${version}.x64.rpm.tar.gz";
+      sha256 = "0m9c60rszzdvq1pqfzygzzrjycm1giy465lj29108j7hsnfcv56r";
+    };
+    installPhase = ''
+      cd plugins
+      ${rpm}/bin/rpm2cpio iscan-plugin-gt-x770-${pluginVersion}.x86_64.rpm | ${cpio}/bin/cpio -idmv
+      mkdir $out
+      cp -r usr/share $out
+      cp -r usr/lib64 $out/lib
+      mv $out/share/iscan $out/share/esci
+      mv $out/lib/iscan $out/lib/esci
+      '';
+    preFixup = ''
+      lib=$out/lib/esci/libesint7C.so
+      rpath=${gcc.cc.lib}/lib/
+      patchelf --set-rpath $rpath $lib
+      '';
+    passthru = {
+      registrationCommand = ''
+        $registry --add interpreter usb 0x04b8 0x0130 "$plugin/lib/esci/libesint7C $plugin/share/esci/esfw7C.bin"
+        '';
+      hw = "Perfection V500 Photo";
+      };
+    meta = common_meta // { description = "iscan esci x770 plugin for "+passthru.hw; };
+    };
   f720 = stdenv.mkDerivation rec {
     name = "iscan-gt-f720-bundle";
     version = "1.0.1";
@@ -103,7 +135,7 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-2.28.1.3+libpng-1.5.patch";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-2.28.1.3+libpng-1.5.patch?h=b6e4c805d53b49da79a0f64ef16bb82d6d800fcf";
       sha256 = "04y70qjd220dpyh771fiq50lha16pms98mfigwjczdfmx6kpj1jd";
     })
     ./firmware_location.patch
@@ -124,7 +156,7 @@ stdenv.mkDerivation rec {
     '';
   postFixup = ''
     # iscan-registry is a shell script requiring getopt
-    wrapProgram $out/bin/iscan-registry --prefix PATH : ${eject}/bin
+    wrapProgram $out/bin/iscan-registry --prefix PATH : ${getopt}/bin
     registry=$out/bin/iscan-registry;
     '' +
     stdenv.lib.concatStrings (stdenv.lib.mapAttrsToList (name: value: ''
@@ -138,5 +170,6 @@ stdenv.mkDerivation rec {
       Supported hardware: at least :
     '' +
     stdenv.lib.concatStringsSep ", " (stdenv.lib.mapAttrsToList (name: value: value.passthru.hw) plugins);
+    maintainers = with stdenv.lib.maintainers; [ symphorien ];
   };
 }

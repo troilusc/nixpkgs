@@ -1,12 +1,22 @@
-{ stdenv, fetchurl }:
+{ stdenv, fetchurl, openssl, fetchpatch }:
 
 stdenv.mkDerivation rec {
-  name = "iperf-3.2";
+  name = "iperf-3.6";
 
   src = fetchurl {
-    url = "http://downloads.es.net/pub/iperf/${name}.tar.gz";
-    sha256 = "07cwrl9q5pmfjlh6ilpk7hm25lpkcaf917zhpmfq918lhrpv61zj";
+    url = "https://downloads.es.net/pub/iperf/${name}.tar.gz";
+    sha256 = "0vllfmyqiy6nxgbagsx1zrs4pmfawyalzm5l1xcwqq64dpj52pfy";
   };
+
+  buildInputs = [ openssl ];
+
+  patches = stdenv.lib.optionals stdenv.hostPlatform.isMusl [
+    (fetchpatch {
+      url = "http://git.alpinelinux.org/cgit/aports/plain/main/iperf3/remove-pg-flags.patch";
+      name = "remove-pg-flags.patch";
+      sha256 = "0lnczhass24kgq59drgdipnhjnw4l1cy6gqza7f2ah1qr4q104rm";
+    })
+  ];
 
   postInstall = ''
     ln -s iperf3 $out/bin/iperf

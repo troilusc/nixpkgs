@@ -5,11 +5,13 @@ stdenv.mkDerivation rec {
   version = "2.43";
 
   src = fetchurl {
-    url="http://www.jwz.org/xdaliclock/${name}.tar.gz";
+    url="https://www.jwz.org/xdaliclock/${name}.tar.gz";
     sha256 = "194zzp1a989k2v8qzfr81gdknr8xiz16d6fdl63jx9r3mj5klmvb";
   };
 
-  sourceRoot = "${name}/X11";
+  # Note: don't change this to set sourceRoot, or updateAutotoolsGnuConfigScriptsHook
+  # on aarch64 doesn't find the files to patch and the aarch64 build fails!
+  preConfigure = "cd X11";
 
   buildInputs = [ libX11 xproto libXt libICE libSM libXext ];
 

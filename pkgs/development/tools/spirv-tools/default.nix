@@ -3,19 +3,18 @@
 let
 
 spirv_sources = {
-  # `vulkan-loader` requires a specific version of `spirv-tools` and `spirv-headers` as specified in
-  # `<vulkan-loader-repo>/external_revisions/spirv-tools_revision`.
+  # `glslang` requires a specific version of `spirv-tools` and `spirv-headers` as specified in `known-good.json`.
   tools = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "SPIRV-Tools";
-    rev = "7fe8a57a5bd72094e91f9f93e51dac2f2461dcb4";
-    sha256 = "0rh25y1k3m3f1nqs032lh3mng5qfw9kqn6xv9yzzm47i1i0b6hmr";
+    rev = "f2c93c6e124836797311facb8449f9a0b76fefc2";
+    sha256 = "03w5xk2hjijj1rfbx5dw3lhy7vb9zrssfcwvp09q47f77vkgl105";
   };
   headers = fetchFromGitHub {
     owner = "KhronosGroup";
     repo = "SPIRV-Headers";
-    rev = "6c08995e6e7b94129e6086c78198c77111f2f262";
-    sha256 = "07m12wm9prib7hldj7pbc8vwnj0x6llgx4shzgy8x4xbhbafawws";
+    rev = "12f8de9f04327336b699b1b80aa390ae7f9ddbf4";
+    sha256 = "0fswk5ndvkmy64har3dmhpkv09zmvb0p4knbqc4fdl4qiggz0fvf";
   };
 };
 
@@ -23,7 +22,7 @@ in
 
 stdenv.mkDerivation rec {
   name = "spirv-tools-${version}";
-  version = "2017-03-23";
+  version = "2018-06-06";
 
   src = spirv_sources.tools;
   patchPhase = ''ln -sv ${spirv_sources.headers} external/spirv-headers'';

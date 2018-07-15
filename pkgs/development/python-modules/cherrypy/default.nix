@@ -1,23 +1,30 @@
-{ stdenv, buildPythonPackage, fetchPypi, isPy3k
-, pytest, setuptools_scm, pytestrunner
-, six, cheroot, portend }:
+{ lib, buildPythonPackage, fetchPypi
+, cheroot, portend, routes, six
+, setuptools_scm
+, backports_unittest-mock, objgraph, pathpy, pytest, pytestcov
+, backports_functools_lru_cache, requests_toolbelt
+}:
 
 buildPythonPackage rec {
-  name = "${pname}-${version}";
   pname = "CherryPy";
-  version = "11.0.0";
+  version = "16.0.2";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1037pvhab4my791vfzikm649ny52fj7x2q87cnncmbnqin6ghwan";
+    sha256 = "858fbff27235a392026b1d821ad815b587815c94fbb14312e2e64cc23766b9c3";
   };
 
-  # wsgiserver.ssl_pyopenssl is broken on py3k.
-  doCheck = !isPy3k;
-  buildInputs = [ pytest setuptools_scm pytestrunner ];
-  propagatedBuildInputs = [ six cheroot portend ];
+  propagatedBuildInputs = [ cheroot portend routes six ];
 
-  meta = with stdenv.lib; {
+  buildInputs = [ setuptools_scm ];
+
+  checkInputs = [ backports_unittest-mock objgraph pathpy pytest pytestcov backports_functools_lru_cache requests_toolbelt ];
+
+  checkPhase = ''
+    LANG=en_US.UTF-8 pytest
+  '';
+
+  meta = with lib; {
     homepage = "http://www.cherrypy.org";
     description = "A pythonic, object-oriented HTTP framework";
     license = licenses.bsd3;

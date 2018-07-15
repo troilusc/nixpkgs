@@ -4,7 +4,6 @@
 }:
 
 buildPythonPackage rec {
-  name = "${pname}-${version}";
   pname = "flake8";
   version = "3.5.0";
 
@@ -20,7 +19,7 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "Code checking using pep8 and pyflakes";
-    homepage = http://pypi.python.org/pypi/flake8;
+    homepage = https://pypi.python.org/pypi/flake8;
     license = licenses.mit;
     maintainers = with maintainers; [ garbas ];
   };

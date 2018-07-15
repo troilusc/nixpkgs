@@ -17,6 +17,7 @@
 , enableLastfm         ? true
 , enableMpd            ? true
 , enableReplaygain     ? true, bs1770gain ? null
+, enableSonosUpdate    ? true
 , enableThumbnails     ? true
 , enableWeb            ? true
 
@@ -37,6 +38,7 @@ assert enableKeyfinder   -> keyfinder-cli != null;
 assert enableLastfm      -> pythonPackages.pylast         != null;
 assert enableMpd         -> pythonPackages.mpd2           != null;
 assert enableReplaygain  -> bs1770gain                    != null;
+assert enableSonosUpdate -> pythonPackages.soco           != null;
 assert enableThumbnails  -> pythonPackages.pyxdg          != null;
 assert enableWeb         -> pythonPackages.flask          != null;
 
@@ -59,6 +61,7 @@ let
     mpdstats = enableMpd;
     mpdupdate = enableMpd;
     replaygain = enableReplaygain;
+    sonosupdate = enableSonosUpdate;
     thumbnails = enableThumbnails;
     web = enableWeb;
   };
@@ -95,13 +98,13 @@ let
 
 in pythonPackages.buildPythonApplication rec {
   name = "beets-${version}";
-  version = "1.4.5";
+  version = "1.4.7";
 
   src = fetchFromGitHub {
     owner = "beetbox";
     repo = "beets";
     rev = "v${version}";
-    sha256 = "0fvfp9ckq3dhs4f8abg9fprfppyf0g6mv8br2xz99plg4wnffzmy";
+    sha256 = "17gfz0g7pqm6wha8zf63zpw07zgi787w1bjwdcxdh1l3z4m7jc9l";
   };
 
   propagatedBuildInputs = [
@@ -129,6 +132,7 @@ in pythonPackages.buildPythonApplication rec {
     ++ optional enableKeyfinder     keyfinder-cli
     ++ optional enableLastfm        pythonPackages.pylast
     ++ optional enableMpd           pythonPackages.mpd2
+    ++ optional enableSonosUpdate   pythonPackages.soco
     ++ optional enableThumbnails    pythonPackages.pyxdg
     ++ optional enableWeb           pythonPackages.flask
     ++ optional enableAlternatives  plugins.alternatives
@@ -174,6 +178,11 @@ in pythonPackages.buildPythonApplication rec {
       test/test_replaygain.py
   '';
 
+  postInstall = ''
+    mkdir -p $out/share/zsh/site-functions
+    cp extra/_beet $out/share/zsh/site-functions/
+  '';
+
   doCheck = true;
 
   preCheck = ''
@@ -194,7 +203,8 @@ in pythonPackages.buildPythonApplication rec {
     BEETS_TEST_SHELL="${testShell}" \
     BASH_COMPLETION_SCRIPT="${completion}" \
     HOME="$(mktemp -d)" \
-      nosetests -v
+      # Exclude failing test https://github.com/beetbox/beets/issues/2652
+      nosetests -v --exclude=test_single_month_nonmatch_ --exclude=test_asciify_variable --exclude=test_asciify_character_expanding_to_slash
 
     runHook postCheck
   '';
@@ -221,9 +231,9 @@ in pythonPackages.buildPythonApplication rec {
 
   meta = {
     description = "Music tagger and library organizer";
-    homepage = http://beets.radbox.org;
+    homepage = http://beets.io;
     license = licenses.mit;
-    maintainers = with maintainers; [ aszlig domenkozar pjones profpatsch ];
+    maintainers = with maintainers; [ aszlig domenkozar pjones ];
     platforms = platforms.linux;
   };
 }

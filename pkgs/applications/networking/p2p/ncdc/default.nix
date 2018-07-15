@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
   version = "1.20";
 
   src = fetchurl {
-    url = "http://dev.yorhel.nl/download/ncdc-${version}.tar.gz";
+    url = "https://dev.yorhel.nl/download/ncdc-${version}.tar.gz";
     sha256 = "0ccn7dqbqpqsbglqyalz32c20rjvf1pw0zr88jyvd2b2vxbqi6ca";
   };
 
@@ -14,7 +14,7 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "Modern and lightweight direct connect client with a friendly ncurses interface";
-    homepage = http://dev.yorhel.nl/ncdc;
+    homepage = https://dev.yorhel.nl/ncdc;
     license = licenses.mit;
     platforms = platforms.linux; # arbitrary
     maintainers = with maintainers; [ ehmry ];

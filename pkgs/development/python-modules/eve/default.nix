@@ -3,17 +3,12 @@
 
 buildPythonPackage rec {
   pname = "Eve";
-  version = "0.7.4";
-  name  = "${pname}-${version}";
+  version = "0.8";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0xihl5w2m4vkp0515qjibiy88pk380n5jmj8n9hh7q40b1vx1kwb";
+    sha256 = "9f926c715f88c7a92dc2b950ccc09cccd91f72fe0e93cde806b85d25b947df2f";
   };
-
-  patches = [
-    ./setup.patch
-  ];
 
   propagatedBuildInputs = [
     cerberus

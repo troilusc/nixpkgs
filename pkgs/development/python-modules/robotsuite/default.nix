@@ -3,7 +3,6 @@
 buildPythonPackage rec {
   pname = "robotsuite";
   version = "2.0.0";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,7 +14,7 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "Python unittest test suite for Robot Framework";
-    homepage = http://github.com/collective/robotsuite/;
+    homepage = https://github.com/collective/robotsuite/;
     license = licenses.gpl3;
   };
 }

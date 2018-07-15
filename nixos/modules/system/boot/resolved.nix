@@ -126,7 +126,7 @@ in
   config = mkIf cfg.enable {
 
     systemd.additionalUpstreamSystemUnits = [
-      "systemd-resolved.service" "org.freedesktop.resolve1.busname"
+      "systemd-resolved.service"
     ];
 
     systemd.services.systemd-resolved = {
@@ -147,6 +147,8 @@ in
       ${config.services.resolved.extraConfig}
     '';
 
+    # If networkmanager is enabled, ask it to interface with resolved.
+    networking.networkmanager.dns = "systemd-resolved";
   };
 
 }

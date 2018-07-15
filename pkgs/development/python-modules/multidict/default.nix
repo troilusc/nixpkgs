@@ -1,33 +1,27 @@
 { lib
-, fetchurl
+, fetchPypi
 , buildPythonPackage
-, pytest
+, pytest, pytestrunner
 , isPy3k
-, psutil
 }:
 
-let
+buildPythonPackage rec {
   pname = "multidict";
-  version = "3.3.0";
-in buildPythonPackage rec {
-  name = "${pname}-${version}";
+  version = "4.3.1";
 
-  src = fetchurl {
-    url = "mirror://pypi/${builtins.substring 0 1 pname}/${pname}/${name}.tar.gz";
-    sha256 = "e76909da2fad6966281d4e0e4ccfd3c3025699ebcc30806afa09fa1384c3532b";
+  src = fetchPypi {
+    inherit pname version;
+    sha256 = "5ba766433c30d703f6b2c17eb0b6826c6f898e5f58d89373e235f07764952314";
   };
 
-  checkInputs = [ pytest psutil ];
-
-  checkPhase = ''
-    py.test
-  '';
+  checkInputs = [ pytest pytestrunner ];
 
   disabled = !isPy3k;
 
-  meta = {
+  meta = with lib; {
     description = "Multidict implementation";
     homepage = https://github.com/aio-libs/multidict/;
-    license = lib.licenses.asl20;
+    license = licenses.asl20;
+    maintainers = with maintainers; [ dotlambda ];
   };
 }

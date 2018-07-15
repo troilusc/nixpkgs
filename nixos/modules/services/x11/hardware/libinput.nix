@@ -116,7 +116,7 @@ in {
       };
 
       scrollMethod = mkOption {
-        type = types.enum [ "twofinger" "edge" "none" ];
+        type = types.enum [ "twofinger" "edge" "button" "none" ];
         default = "twofinger";
         example = "edge";
         description =
@@ -170,7 +170,7 @@ in {
 
       disableWhileTyping = mkOption {
         type = types.bool;
-        default = true;
+        default = false;
         description =
           ''
             Disable input method while typing.
@@ -197,6 +197,13 @@ in {
     services.xserver.modules = [ pkgs.xorg.xf86inputlibinput ];
 
     environment.systemPackages = [ pkgs.xorg.xf86inputlibinput ];
+
+    environment.etc = [
+      (let cfgPath = "X11/xorg.conf.d/40-libinput.conf"; in {
+        source = pkgs.xorg.xf86inputlibinput.out + "/share/" + cfgPath;
+        target = cfgPath;
+      })
+    ];
 
     services.udev.packages = [ pkgs.libinput ];
 

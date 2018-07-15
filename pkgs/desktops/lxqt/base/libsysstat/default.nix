@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   name = "libsysstat-${version}";
-  version = "0.3.3";
+  version = "0.4.1";
 
   src = fetchFromGitHub {
     owner = "lxde";
     repo = "libsysstat";
     rev = version;
-    sha256 = "1rkbh6jj69wsf8a7w7cq8psqw08vqf9rq5pdnv4xxqb036r4bi31";
+    sha256 = "0ad5pcr5lq1hvrfijvddvz2fvsmh1phb54wb0f756av0kyiwq0gb";
   };
 
   nativeBuildInputs = [ cmake lxqt.lxqt-build-tools ];

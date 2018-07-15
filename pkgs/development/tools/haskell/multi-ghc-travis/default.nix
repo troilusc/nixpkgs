@@ -1,29 +1,29 @@
-{ stdenv, ghc, fetchFromGitHub }:
+{ mkDerivation, ansi-terminal, base, bytestring, Cabal, containers
+, deepseq, Diff, directory, filepath, ShellCheck, stdenv, tasty
+, tasty-golden, transformers, fetchFromGitHub, fetchpatch
+}:
 
-stdenv.mkDerivation rec {
-  name = "multi-ghc-travis-${version}";
-  version = "20170728-git";
-
-  buildInputs = [ ghc ];
-
+mkDerivation {
+  pname = "haskell-ci";
+  version = "0";
   src = fetchFromGitHub {
-    owner = "hvr";
-    repo = "multi-ghc-travis";
-    rev = "437739986fc81ca8c010e5d889348ba74171e680";
-    sha256 = "05fbc7ab9c25k19xj0iax72gv62l89dw2m4bci7h76y9hcajs5v4";
+    owner = "haskell-CI";
+    repo = "haskell-ci";
+    rev = "f7ab8c794d7a957370d89f9b4e285a6d20bf8af8";
+    sha256 = "0w8qjdy8hzdrwmqnkf4y967r9xh0k21w3hxqlsjp66cay1vby2s8";
   };
-
-  installPhase = ''
-    mkdir -p $out/bin
-    ghc -O --make make_travis_yml.hs -o $out/bin/make-travis-yml
-    ghc -O --make make_travis_yml_2.hs -o $out/bin/make-travis-yml-2
-  '';
-
-  meta = with stdenv.lib; {
-    description = "Generate .travis.yml for multiple ghc versions";
-    homepage = https://github.com/hvr/multi-ghc-travis;
-    license = licenses.bsd3;
-    platforms = ghc.meta.platforms;
-    maintainers = with maintainers; [ jb55 peti ];
-  };
+  isLibrary = true;
+  isExecutable = true;
+  libraryHaskellDepends = [
+    base Cabal containers deepseq directory filepath ShellCheck
+    transformers
+  ];
+  executableHaskellDepends = [ base ];
+  testHaskellDepends = [
+    ansi-terminal base bytestring Diff directory filepath tasty
+    tasty-golden transformers
+  ];
+  homepage = "https://github.com/haskell-CI/haskell-ci";
+  description = "Script generator for Travis-CI";
+  license = stdenv.lib.licenses.bsd3;
 }

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ZConfig";
   version = "3.2.0";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "Structured Configuration Library";
-    homepage = http://pypi.python.org/pypi/ZConfig;
+    homepage = https://pypi.python.org/pypi/ZConfig;
     license = licenses.zpl20;
     maintainers = [ maintainers.goibhniu ];
   };

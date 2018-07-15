@@ -1,25 +1,33 @@
-{ stdenv, fetchurl, pkgconfig, autoreconfHook, openssl, db48, boost
-, zlib, miniupnpc, qt4, utillinux, protobuf, qrencode, libevent
+{ stdenv, fetchurl, pkgconfig, autoreconfHook, openssl, db48, boost, zeromq
+, zlib, miniupnpc, qtbase ? null, qttools ? null, utillinux, protobuf, qrencode, libevent
 , withGui }:
 
 with stdenv.lib;
 stdenv.mkDerivation rec{
   name = "bitcoin" + (toString (optional (!withGui) "d")) + "-" + version;
-  version = "0.15.0.1";
+  version = "0.16.1";
 
   src = fetchurl {
-    url = "https://bitcoin.org/bin/bitcoin-core-${version}/bitcoin-${version}.tar.gz";
-    sha256 = "16si3skhm6jhw1pkniv2b9y1kkdhjmhj392palphir0qc1srwzmm";
+    urls = [ "https://bitcoincore.org/bin/bitcoin-core-${version}/bitcoin-${version}.tar.gz"
+             "https://bitcoin.org/bin/bitcoin-core-${version}/bitcoin-${version}.tar.gz"
+           ];
+    sha256 = "1zkqp93yircd3pbxczxfnibkpq0sgcv5r7wg6d196b9pwgr9zd39";
   };
 
   nativeBuildInputs = [ pkgconfig autoreconfHook ];
-  buildInputs = [ openssl db48 boost zlib
+  buildInputs = [ openssl db48 boost zlib zeromq
                   miniupnpc protobuf libevent]
                   ++ optionals stdenv.isLinux [ utillinux ]
-                  ++ optionals withGui [ qt4 qrencode ];
+                  ++ optionals withGui [ qtbase qttools qrencode ];
 
   configureFlags = [ "--with-boost-libdir=${boost.out}/lib" ]
-                     ++ optionals withGui [ "--with-gui=qt4" ];
+                     ++ optionals withGui [ "--with-gui=qt5"
+                                            "--with-qt-bindir=${qtbase.dev}/bin:${qttools.dev}/bin"
+                                          ];
+
+  # Fails with "This application failed to start because it could not
+  # find or load the Qt platform plugin "minimal""
+  doCheck = false;
 
   meta = {
     description = "Peer-to-peer electronic cash system";
@@ -32,6 +40,7 @@ stdenv.mkDerivation rec{
     homepage = http://www.bitcoin.org/;
     maintainers = with maintainers; [ roconnor AndersonTorres ];
     license = licenses.mit;
-    platforms = platforms.unix;
+    # bitcoin needs hexdump to build, which doesn't seem to build on darwin at the moment.
+    platforms = platforms.linux;
   };
 }

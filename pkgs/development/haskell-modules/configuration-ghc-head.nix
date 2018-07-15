@@ -7,11 +7,10 @@ self: super: {
   # Use the latest LLVM.
   inherit (pkgs) llvmPackages;
 
-  # Disable GHC 7.11.x core libraries.
+  # Disable GHC 8.7.x core libraries.
   array = null;
   base = null;
   binary = null;
-  bin-package-db = null;
   bytestring = null;
   Cabal = null;
   containers = null;
@@ -24,14 +23,17 @@ self: super: {
   ghc-prim = null;
   ghci = null;
   haskeline = null;
-  hoopl = null;
   hpc = null;
   integer-gmp = null;
+  mtl = null;
+  parsec = null;
   pretty = null;
   process = null;
   rts = null;
+  stm = null;
   template-haskell = null;
   terminfo = null;
+  text = null;
   time = null;
   transformers = null;
   unix = null;
@@ -46,10 +48,6 @@ self: super: {
 
   # We have time 1.5
   aeson = disableCabalFlag super.aeson "old-locale";
-
-  # Show works differently for record syntax now, breaking haskell-src-exts' parser tests
-  # https://github.com/haskell-suite/haskell-src-exts/issues/224
-  haskell-src-exts = dontCheck super.haskell-src-exts;
 
   # Setup: At least the following dependencies are missing: base <4.8
   hspec-expectations = overrideCabal super.hspec-expectations (drv: {
@@ -96,5 +94,5 @@ self: super: {
   test-framework = doJailbreak super.test-framework;
   atomic-primops = doJailbreak (appendPatch super.atomic-primops ./patches/atomic-primops-Cabal-1.25.patch);
   hashable = doJailbreak super.hashable;
-  stm = doJailbreak super.stm;
+
 }

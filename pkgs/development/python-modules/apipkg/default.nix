@@ -4,7 +4,6 @@
 buildPythonPackage rec {
   pname = "apipkg";
   version = "1.4";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,7 +18,7 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "Namespace control and lazy-import mechanism";
-    homepage = http://bitbucket.org/hpk42/apipkg;
+    homepage = https://bitbucket.org/hpk42/apipkg;
     license = licenses.mit;
   };
 }

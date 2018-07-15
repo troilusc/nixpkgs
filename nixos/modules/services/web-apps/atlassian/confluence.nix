@@ -127,25 +127,22 @@ in
 
 
 
-      jrePackage = let
-        jreSwitch = unfree: free: if config.nixpkgs.config.allowUnfree or false then unfree else free;
-      in mkOption {
+      jrePackage = mkOption {
         type = types.package;
-        default = jreSwitch pkgs.oraclejre8 pkgs.openjdk8.jre;
-        defaultText = jreSwitch "pkgs.oraclejre8" "pkgs.openjdk8.jre";
-        example = literalExample "pkgs.openjdk8.jre";
-        description = "Java Runtime to use for Confluence. Note that Atlassian recommends the Oracle JRE.";
+        default = pkgs.oraclejre8;
+        defaultText = "pkgs.oraclejre8";
+        description = "Note that Atlassian only support the Oracle JRE (JRASERVER-46152).";
       };
     };
   };
 
   config = mkIf cfg.enable {
-    users.extraUsers."${cfg.user}" = {
+    users.users."${cfg.user}" = {
       isSystemUser = true;
       group = cfg.group;
     };
 
-    users.extraGroups."${cfg.group}" = {};
+    users.groups."${cfg.group}" = {};
 
     systemd.services.confluence = {
       description = "Atlassian Confluence";
@@ -178,14 +175,13 @@ in
           ${pkg}/conf/server.xml.dist > ${cfg.home}/server.xml
       '';
 
-      script = "${pkg}/bin/start-confluence.sh -fg";
-      stopScript  = "${pkg}/bin/stop-confluence.sh";
-
       serviceConfig = {
         User = cfg.user;
         Group = cfg.group;
         PrivateTmp = true;
         PermissionsStartOnly = true;
+        ExecStart = "${pkg}/bin/start-confluence.sh -fg";
+        ExecStop = "${pkg}/bin/stop-confluence.sh";
       };
     };
   };

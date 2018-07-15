@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, gfortran, perl, which, config, coreutils
+{ stdenv, fetchurl, fetchpatch, gfortran, perl, which, config, coreutils
 # Most packages depending on openblas expect integer width to match
 # pointer width, but some expect to use 32-bit integers always
 # (for compatibility with reference BLAS).
@@ -12,10 +12,26 @@ let blas64_ = blas64; in
 let
   # To add support for a new platform, add an element to this set.
   configs = {
+    armv6l-linux = {
+      BINARY = "32";
+      TARGET = "ARMV6";
+      DYNAMIC_ARCH = "0";
+      CC = "gcc";
+      USE_OPENMP = "1";
+    };
+
     armv7l-linux = {
       BINARY = "32";
       TARGET = "ARMV7";
       DYNAMIC_ARCH = "0";
+      CC = "gcc";
+      USE_OPENMP = "1";
+    };
+
+    aarch64-linux = {
+      BINARY = "64";
+      TARGET = "ARMV8";
+      DYNAMIC_ARCH = "1";
       CC = "gcc";
       USE_OPENMP = "1";
     };
@@ -44,7 +60,7 @@ let
       TARGET = "ATHLON";
       DYNAMIC_ARCH = "1";
       CC = "gcc";
-      USE_OPENMP = "1";
+      USE_OPENMP = if stdenv.hostPlatform.isMusl then "0" else "1";
     };
   };
 in
@@ -60,14 +76,13 @@ let
     if blas64_ != null
       then blas64_
       else hasPrefix "x86_64" stdenv.system;
-
-  version = "0.2.20";
 in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   name = "openblas-${version}";
+  version = "0.3.1";
   src = fetchurl {
     url = "https://github.com/xianyi/OpenBLAS/archive/v${version}.tar.gz";
-    sha256 = "157kpkbpwlr57dkmqiwr3qp9fglfidagv7l6fibrhln6v4aqpwsy";
+    sha256 = "0czbs2afmcxxij1ivqrm04p0qcksg5fravjifhydvb7k6mpraphz";
     name = "openblas-${version}.tar.gz";
   };
 
@@ -99,8 +114,10 @@ stdenv.mkDerivation {
       "NUM_THREADS=64"
       "INTERFACE64=${if blas64 then "1" else "0"}"
       "NO_STATIC=1"
-    ]
+    ] ++ stdenv.lib.optional (stdenv.hostPlatform.libc == "musl") "NO_AFFINITY=1"
     ++ mapAttrsToList (var: val: var + "=" + val) config;
+
+  patches = []; # TODO: Remove on next mass-rebuild
 
   doCheck = true;
   checkTarget = "tests";

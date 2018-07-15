@@ -4,14 +4,14 @@
 
 stdenv.mkDerivation rec {
   pname = "tig";
-  version = "2.3.0";
+  version = "2.3.3";
   name = "${pname}-${version}";
 
   src = fetchFromGitHub {
     owner = "jonas";
     repo = pname;
     rev = name;
-    sha256 = "04qw3fyamm1lka9vh7adrkr2mcnwcch9ya5sph51jx6d4jz1lih5";
+    sha256 = "1gw5ia6cl5b0q91kv4vfg35my2p49np23aikxqf5gn00zhqrkfap";
   };
 
   nativeBuildInputs = [ makeWrapper autoreconfHook asciidoc xmlto docbook_xsl docbook_xml_dtd_45 findXMLCatalogs pkgconfig ];
@@ -31,8 +31,9 @@ stdenv.mkDerivation rec {
   installPhase = ''
     make install
     make install-doc
-    mkdir -p $out/etc/bash_completion.d/
-    cp contrib/tig-completion.bash $out/etc/bash_completion.d/
+    install -D contrib/tig-completion.bash $out/etc/bash_completion.d/tig-completion.bash
+    install -D contrib/tig-completion.zsh $out/share/zsh/site-functions/_tig
+    cp contrib/vim.tigrc $out/etc/
 
     wrapProgram $out/bin/tig \
       --prefix PATH ':' "${git}/bin"

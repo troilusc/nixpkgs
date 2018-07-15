@@ -1,6 +1,5 @@
-{ stdenv, fetchurl, pkgconfig, gnutls, jansson, liburcu, lmdb, libcap_ng, libidn
-, systemd, nettle, libedit, zlib, libiconv, libintlOrEmpty
-, fetchpatch
+{ stdenv, fetchurl, pkgconfig, gnutls, liburcu, lmdb, libcap_ng, libidn
+, systemd, nettle, libedit, zlib, libiconv, libintl
 }:
 
 let inherit (stdenv.lib) optional optionals; in
@@ -8,38 +7,23 @@ let inherit (stdenv.lib) optional optionals; in
 # Note: ATM only the libraries have been tested in nixpkgs.
 stdenv.mkDerivation rec {
   name = "knot-dns-${version}";
-  version = "2.6.0";
+  version = "2.6.8";
 
   src = fetchurl {
-    url = "http://secure.nic.cz/files/knot-dns/knot-${version}.tar.xz";
-    sha256 = "68e04961d0bf6ba193cb7ec658b295c4ff6e60b3754d64bcd77ebdcee0f283fd";
+    url = "https://secure.nic.cz/files/knot-dns/knot-${version}.tar.xz";
+    sha256 = "0daee8efd6262f10c54ee6f5fb99ca4d0f72e275513ec0902032af594cac1b15";
   };
-
-  patches = [
-    # remove both for >= 2.6.1
-    (fetchpatch {
-      name = "kdig-tls.patch";
-      url = "https://gitlab.labs.nic.cz/knot/knot-dns/commit/b72d5cd032795.diff";
-      sha256 = "0ig31rp82j49jh8n3s0dcf5abhh35mcp2k2wii7bh0c60ngb29k6";
-    })
-    (fetchpatch {
-      name = "kdig-tls-sni.patch";
-      url = "https://gitlab.labs.nic.cz/knot/knot-dns/commit/2e94ccee671ec70e.diff";
-      sha256 = "0psl6650v7g240i8w196v7zxy6j11d0aa6hm11b7vnaimjshgibv";
-    })
-  ];
 
   outputs = [ "bin" "out" "dev" ];
 
   nativeBuildInputs = [ pkgconfig ];
   buildInputs = [
-    gnutls jansson liburcu libidn
+    gnutls liburcu libidn
     nettle libedit
-    libiconv lmdb
+    libiconv lmdb libintl
     # without sphinx &al. for developer documentation
   ]
     ++ optionals stdenv.isLinux [ libcap_ng systemd ]
-    ++ libintlOrEmpty
     ++ optional stdenv.isDarwin zlib; # perhaps due to gnutls
 
   enableParallelBuilding = true;
@@ -48,7 +32,7 @@ stdenv.mkDerivation rec {
 
   #doCheck = true; problems in combination with dynamic linking
 
-  postInstall = ''rm -r "$out"/var'';
+  postInstall = ''rm -r "$out"/var "$out"/lib/*.la'';
 
   meta = with stdenv.lib; {
     description = "Authoritative-only DNS server from .cz domain registry";
@@ -58,4 +42,3 @@ stdenv.mkDerivation rec {
     maintainers = [ maintainers.vcunat ];
   };
 }
-

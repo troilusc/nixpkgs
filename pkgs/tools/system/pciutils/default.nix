@@ -1,17 +1,24 @@
 { stdenv, fetchurl, pkgconfig, zlib, kmod, which }:
 
 stdenv.mkDerivation rec {
-  name = "pciutils-3.5.5"; # with database from 2017-07
+  name = "pciutils-3.6.0"; # with database from 2018-06-29
 
   src = fetchurl {
     url = "mirror://kernel/software/utils/pciutils/${name}.tar.xz";
-    sha256 = "1d62f8fa192f90e61c35a6fc15ff3cb9a7a792f782407acc42ef67817c5939f5";
+    sha256 = "17g9rvjknj2yqwxldnz8m5kaabbdvkcjnfic4sbx88kh0s81197j";
   };
 
   nativeBuildInputs = [ pkgconfig ];
   buildInputs = [ zlib kmod which ];
 
-  makeFlags = "SHARED=yes PREFIX=\${out}";
+  makeFlags = [
+    "SHARED=yes"
+    "PREFIX=\${out}"
+    "STRIP="
+    "HOST=${stdenv.hostPlatform.system}"
+    "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
+    "DNS=yes"
+  ];
 
   installTargets = "install install-lib";
 
@@ -26,4 +33,3 @@ stdenv.mkDerivation rec {
     maintainers = [ maintainers.vcunat ]; # not really, but someone should watch it
   };
 }
-

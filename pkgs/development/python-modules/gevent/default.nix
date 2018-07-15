@@ -1,19 +1,13 @@
-{ stdenv, fetchurl, buildPythonPackage, isPyPy, python, libev, greenlet }:
+{ stdenv, fetchPypi, buildPythonPackage, isPyPy, python, libev, greenlet }:
 
 buildPythonPackage rec {
-  name = "gevent-1.1.2";
+  pname = "gevent";
+  version = "1.3.4";
 
-  src = fetchurl {
-    url = "mirror://pypi/g/gevent/${name}.tar.gz";
-    sha256 = "cb15cf73d69a2eeefed330858f09634e2c50bf46da9f9e7635730fcfb872c02c";
+  src = fetchPypi {
+    inherit pname version;
+    sha256 = "53c4dc705886d028f5d81e698b1d1479994a421498cd6529cb9711b5e2a84f74";
   };
-
-  # Why do we have this patch?
-  postPatch = ''
-    substituteInPlace libev/ev.c --replace \
-      "ecb_inline void ecb_unreachable (void) ecb_noreturn" \
-      "ecb_inline ecb_noreturn void ecb_unreachable (void)"
-  '';
 
   buildInputs = [ libev ];
   propagatedBuildInputs = stdenv.lib.optionals (!isPyPy) [ greenlet ];

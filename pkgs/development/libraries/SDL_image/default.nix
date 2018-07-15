@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
   version = "1.2.12";
 
   src = fetchurl {
-    url    = "http://www.libsdl.org/projects/SDL_image/release/${name}.tar.gz";
+    url    = "https://www.libsdl.org/projects/SDL_image/release/${name}.tar.gz";
     sha256 = "16an9slbb8ci7d89wakkmyfvp7c0cval8xw4hkg0842nhhlp540b";
   };
 
@@ -16,6 +16,8 @@ stdenv.mkDerivation rec {
       sha256 = "140dyszz9hkpgwjdiwp1b7jdd8f8l5d862xdaf3ml4cimga1h5kv";
     })
   ];
+
+  configureFlags = stdenv.lib.optional stdenv.isDarwin "--disable-sdltest";
 
   buildInputs = [ SDL libpng libjpeg libtiff libungif libXpm ];
 

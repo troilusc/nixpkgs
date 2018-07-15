@@ -1,10 +1,10 @@
-{ lib, python3Packages, fetchFromGitHub }:
+{ lib, python3Packages, fetchFromGitHub, glibcLocales }:
 
 let
   pythonPackages = python3Packages;
 in pythonPackages.buildPythonApplication rec {
   name = "asciinema-${version}";
-  version = "1.4.0";
+  version = "2.0.1";
 
   buildInputs = with pythonPackages; [ nose ];
   propagatedBuildInputs = with pythonPackages; [ requests ];
@@ -13,7 +13,7 @@ in pythonPackages.buildPythonApplication rec {
     owner = "asciinema";
     repo = "asciinema";
     rev = "v${version}";
-    sha256 = "1m2gjqxb5gqyz19lvp7jmwp7cxjc6nb0b2rrlsg3z2bl6vmi1xn2";
+    sha256 = "09m9agkslrbm36y8pjqhg5nmyz9hppjyhafhzpglnadhfgwqzznr";
   };
 
   patchPhase = ''
@@ -21,8 +21,10 @@ in pythonPackages.buildPythonApplication rec {
     rm tests/pty_recorder_test.py
   '';
 
+  checkInputs = [ glibcLocales ];
+
   checkPhase = ''
-    nosetests
+    LC_ALL=en_US.UTF-8 nosetests
   '';
 
   meta = {

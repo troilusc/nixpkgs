@@ -1,35 +1,64 @@
-{ stdenv, fetchgit, autoreconfHook, readline }:
+{ stdenv, fetchgit, autoreconfHook, readline, python3Packages }:
 
 let
   ell = fetchgit {
      url = https://git.kernel.org/pub/scm/libs/ell/ell.git;
-     rev = "e0dbdfbd5992bd3e78029b83930b9020e74cdaa5";
-     sha256 = "031m1vvcrhggnyvvqyrqpzldi2amsbvhdfcxrypzqz58vysk69vm";
+     rev = "0.6";
+     sha256 = "0cs0a7rjg9gl9gn9sc3b1y8mv2zbjg7rb87mla6kcrknjci76pgm";
   };
 in stdenv.mkDerivation rec {
-  name = "iwd-unstable-2017-09-22";
+  name = "iwd-${version}";
+  version = "0.3";
 
   src = fetchgit {
     url = https://git.kernel.org/pub/scm/network/wireless/iwd.git;
-    rev = "31631e1935337910c7bc0c3eb215f579143c1fe0";
-    sha256 = "0xl8ali5hy7ragdc4palm857y0prcg32294hv3vv28r9r4x4llcm";
+    rev = version;
+    sha256 = "151bqc85vchl1arhl9pyvfashxq886cjrbi6js4csx4vzscbhzzm";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    python3Packages.wrapPython
+  ];
+
+  buildInputs = [
+    readline
+    python3Packages.python
+  ];
+
+  pythonPath = [
+    python3Packages.dbus-python
+    python3Packages.pygobject3
+  ];
+
+  enableParallelBuilding = true;
+
   configureFlags = [
-    "--with-dbusconfdir=$(out)/etc/"
+    "--with-dbus-datadir=$(out)/etc/"
+    "--localstatedir=/var"
+    "--disable-systemd-service"
   ];
 
   postUnpack = ''
     ln -s ${ell} ell
+    patchShebangs .
   '';
 
-  nativeBuildInputs = [ autoreconfHook ];
+  postInstall = ''
+    cp -a test/* $out/bin/
+    mkdir -p $out/share
+    cp -a doc $out/share/
+    cp -a README AUTHORS TODO $out/share/doc/
+  '';
 
-  buildInputs = [ readline ];
+  preFixup = ''
+    wrapPythonPrograms
+  '';
 
   meta = with stdenv.lib; {
     homepage = https://git.kernel.org/pub/scm/network/wireless/iwd.git;
     description = "Wireless daemon for Linux";
+    license = licenses.lgpl21;
     platforms = platforms.linux;
     maintainers = [ maintainers.mic92 ];
   };

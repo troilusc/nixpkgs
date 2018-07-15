@@ -1,6 +1,6 @@
-{ stdenv, fetchurl, chromaprint, fetchpatch, fftw, flac, libid3tag, libmad
-, libopus, libshout, libsndfile, libusb1, libvorbis, pkgconfig
-, portaudio, portmidi, protobuf, qt4, rubberband, scons, sqlite
+{ stdenv, fetchurl, chromaprint, fetchpatch, fftw, flac, faad2, mp4v2
+, libid3tag, libmad, libopus, libshout, libsndfile, libusb1, libvorbis
+, pkgconfig, portaudio, portmidi, protobuf, qt4, rubberband, scons, sqlite
 , taglib, vampSDK
 }:
 
@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
   version = "2.0.0";
 
   src = fetchurl {
-    url = "http://downloads.mixxx.org/${name}/${name}-src.tar.gz";
+    url = "https://downloads.mixxx.org/${name}/${name}-src.tar.gz";
     sha256 = "0vb71w1yq0xwwsclrn2jj9bk8w4n14rfv5c0aw46c11mp8xz7f71";
   };
 
@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
  ];
 
   buildInputs = [
-    chromaprint fftw flac libid3tag libmad libopus libshout libsndfile
+    chromaprint fftw flac faad2 mp4v2 libid3tag libmad libopus libshout libsndfile
     libusb1 libvorbis pkgconfig portaudio portmidi protobuf qt4
     rubberband scons sqlite taglib vampSDK
   ];
@@ -34,6 +34,7 @@ stdenv.mkDerivation rec {
   sconsFlags = [
     "build=release"
     "qtdir=${qt4}"
+    "faad=1"
   ];
 
   buildPhase = ''

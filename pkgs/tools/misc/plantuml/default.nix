@@ -1,12 +1,12 @@
 { stdenv, fetchurl, jre, graphviz }:
 
 stdenv.mkDerivation rec {
-  version = "1.2017.18";
+  version = "1.2018.8";
   name = "plantuml-${version}";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/plantuml/${version}/plantuml.${version}.jar";
-    sha256 = "0ssfg6lpk41ydhxhi6y6c9ca3hpql6gg3bxjws8vrx9s3s6r5rb0";
+    sha256 = "02svd0cpaix2d523iy457h3qwlc9qpvvkls64bqa7yrqyk43xrii";
   };
 
   # It's only a .jar file and a shell wrapper
@@ -32,6 +32,6 @@ stdenv.mkDerivation rec {
     # "java -jar plantuml.jar -license" says GPLv3 or later
     license = licenses.gpl3Plus;
     maintainers = [ maintainers.bjornfor ];
-    platforms = platforms.linux;
+    platforms = platforms.unix;
   };
 }

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "Pygments";
   version = "2.2.0";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,6 @@ buildPythonPackage rec {
     homepage = http://pygments.org/;
     description = "A generic syntax highlighter";
     license = lib.licenses.bsd2;
-    maintainers = with lib.maintainers; [ nckx garbas ];
+    maintainers = with lib.maintainers; [ garbas ];
   };
 }

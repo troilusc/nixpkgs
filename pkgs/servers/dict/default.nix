@@ -13,19 +13,23 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ bison flex libtool which ];
 
-  enableParallelBuilding = true;
+  # Makefile(.in) contains "clientparse.c clientparse.h: clientparse.y" which
+  # causes bison to run twice, and break the build when this happens in
+  # parallel.  Test with "make -j clientparse.c clientparse.h".  The error
+  # message may be "mv: cannot move 'y.tab.c' to 'clientparse.c'".
+  enableParallelBuilding = false;
 
   patchPhase = "patch -p0 < ${./buildfix.diff}";
   configureFlags = [
     "--enable-dictorg"
-    "--datadir=/run/current-system/share/dictd"
+    "--datadir=/run/current-systems/sw/share/dictd"
   ];
 
   meta = with stdenv.lib; {
     description = "Dict protocol server and client";
     homepage    = http://www.dict.org;
     license     = licenses.gpl2;
-    maintainers = with maintainers; [ mornfall ];
+    maintainers = with maintainers; [ ];
     platforms   = platforms.linux;
   };
 }

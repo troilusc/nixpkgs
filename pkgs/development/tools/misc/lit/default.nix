@@ -2,12 +2,11 @@
 
 python2.pkgs.buildPythonApplication rec {
   pname = "lit";
-  version = "0.5.0";
-  name = "${pname}-${version}";
+  version = "0.6.0";
 
   src = python2.pkgs.fetchPypi {
     inherit pname version;
-    sha256 = "3ea4251e78ebeb2e07be2feb33243d1f8931d956efc96ccc2b0846ced212b58c";
+    sha256 = "1png3jgbhrw8a602gy6rnzvjcrj8w2p2kk6szdg9lz42zr090lgb";
   };
 
   # Non-standard test suite. Needs custom checkPhase.

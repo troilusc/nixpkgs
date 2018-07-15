@@ -50,11 +50,14 @@ let
     "mod_geoip"
     "mod_magnet"
     "mod_mysql_vhost"
+    "mod_openssl"  # since v1.4.46
     "mod_scgi"
     "mod_setenv"
     "mod_trigger_b4_dl"
     "mod_uploadprogress"
+    "mod_vhostdb"  # since v1.4.46
     "mod_webdav"
+    "mod_wstunnel"  # since v1.4.46
   ];
 
   maybeModuleString = moduleName:
@@ -242,12 +245,12 @@ in
       serviceConfig.KillSignal = "SIGINT";
     };
 
-    users.extraUsers.lighttpd = {
+    users.users.lighttpd = {
       group = "lighttpd";
       description = "lighttpd web server privilege separation user";
       uid = config.ids.uids.lighttpd;
     };
 
-    users.extraGroups.lighttpd.gid = config.ids.gids.lighttpd;
+    users.groups.lighttpd.gid = config.ids.gids.lighttpd;
   };
 }

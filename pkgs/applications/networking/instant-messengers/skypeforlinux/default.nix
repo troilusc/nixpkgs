@@ -1,10 +1,12 @@
 { stdenv, fetchurl, dpkg, makeWrapper
-, alsaLib, atk, cairo, cups, curl, dbus, expat, fontconfig, freetype, glib, glibc, gnome2, libsecret
-, libnotify, nspr, nss, systemd, xorg, libv4l, libstdcxx5 }:
+, alsaLib, atk, cairo, cups, curl, dbus, expat, fontconfig, freetype, gdk_pixbuf, glib, glibc, gnome3
+, gtk3, libnotify, libpulseaudio, libsecret, libv4l, nspr, nss, pango, systemd, xorg }:
 
 let
 
-  version = "5.4.0.1";
+  # Please keep the version x.y.0.z and do not update to x.y.76.z because the
+  # source of the latter disappears much faster.
+  version = "8.24.0.2";
 
   rpath = stdenv.lib.makeLibraryPath [
     alsaLib
@@ -17,20 +19,20 @@ let
     fontconfig
     freetype
     glib
-    libsecret
     glibc
-    libstdcxx5
+    libsecret
 
-    gnome2.GConf
-    gnome2.gdk_pixbuf
-    gnome2.gtk
-    gnome2.pango
+    gnome3.gconf
+    gdk_pixbuf
+    gtk3
 
-    gnome2.gnome_keyring
+    gnome3.gnome-keyring
 
     libnotify
+    libpulseaudio
     nspr
     nss
+    pango
     stdenv.cc.cc
     systemd
     libv4l
@@ -54,7 +56,7 @@ let
     if stdenv.system == "x86_64-linux" then
       fetchurl {
         url = "https://repo.skype.com/deb/pool/main/s/skypeforlinux/skypeforlinux_${version}_amd64.deb";
-        sha256 = "1idjgmn0kym7jml30xq6zrcp8qinx64kgnxlw8m0ys4z6zlw0c8z";
+        sha256 = "079bv0wilwwd9gqykcyfs4bj8za140788dxi058k4275h1jlvrww";
       }
     else
       throw "Skype for linux is not supported on ${stdenv.system}";
@@ -82,8 +84,8 @@ in stdenv.mkDerivation {
 
   postFixup = ''
     for file in $(find $out -type f \( -perm /0111 -o -name \*.so\* -or -name \*.node\* \) ); do
-                patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$file" || true
-                patchelf --set-rpath ${rpath}:$out/share/skypeforlinux $file || true
+      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$file" || true
+      patchelf --set-rpath ${rpath}:$out/share/skypeforlinux $file || true
     done
 
     ln -s "$out/share/skypeforlinux/skypeforlinux" "$out/bin/skypeforlinux"
@@ -92,15 +94,13 @@ in stdenv.mkDerivation {
     substituteInPlace $out/share/applications/skypeforlinux.desktop \
       --replace /usr/bin/ $out/bin/ \
       --replace /usr/share/ $out/share/
-
   '';
 
   meta = with stdenv.lib; {
     description = "Linux client for skype";
     homepage = https://www.skype.com;
     license = licenses.unfree;
-    maintainers = with stdenv.lib.maintainers; [ panaeon ];
+    maintainers = with stdenv.lib.maintainers; [ panaeon jraygauthier ];
     platforms = [ "x86_64-linux" ];
   };
 }
-

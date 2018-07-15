@@ -3,13 +3,13 @@
 let
   xorgxrdp = stdenv.mkDerivation rec {
     name = "xorgxrdp-${version}";
-    version = "0.2.3";
+    version = "0.2.7";
 
     src = fetchFromGitHub {
       owner = "neutrinolabs";
       repo = "xorgxrdp";
       rev = "v${version}";
-      sha256 = "0l1b38j3q9mxyb8ffpdplbqs6rnabj92i8wngrwlkhfh2c88szn1";
+      sha256 = "15idwgcjgwa9in8y1bblpj67y7w0bfngc2sa0hd9hn0dinrlifrk";
     };
 
     nativeBuildInputs = [ pkgconfig autoconf automake which libtool nasm ];
@@ -34,7 +34,7 @@ let
   };
 
   xrdp = stdenv.mkDerivation rec {
-    version = "0.9.3";
+    version = "0.9.7";
     name = "xrdp-${version}";
 
     src = fetchFromGitHub {
@@ -42,7 +42,7 @@ let
       repo = "xrdp";
       rev = "refs/heads/runtime-cfg-path-${version}";  # Fixes https://github.com/neutrinolabs/xrdp/issues/609; not a patch on top of the official repo because "xorgxrdp.configureFlags" above includes "xrdp.src" which must be patched already
       fetchSubmodules = true;
-      sha256 = "0xqyg3m688fj442zgg9fqmbz7nnzvqpd7a9ki2cwh1hyibacpmz7";
+      sha256 = "1dw2zl9zh6win1q0kxj08n9fawpcrs1krjh5978wp0jmq8sdbn7k";
     };
 
     nativeBuildInputs = [ pkgconfig autoconf automake which libtool nasm ];

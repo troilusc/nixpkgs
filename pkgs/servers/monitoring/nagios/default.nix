@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   name = "nagios-${version}";
-  version = "4.2.4";
+  version = "4.4.1";
 
   src = fetchurl {
     url = "mirror://sourceforge/nagios/nagios-4.x/${name}/${name}.tar.gz";
-    sha256 = "0w0blbwiw0ps04b7gkyyk89qkgwsxh6gydhmggbm1kl3ar3mq1dh";
+    sha256 = "0j09jawjrbp5n7gwyb5mkq7l2dmg6fl03695salral66fs95s8nq";
   };
 
   patches = [ ./nagios.patch ];
@@ -23,7 +23,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "A host, service and network monitoring program";
-    homepage    = http://www.nagios.org/;
+    homepage    = https://www.nagios.org/;
     license     = stdenv.lib.licenses.gpl2;
     platforms   = stdenv.lib.platforms.linux;
     maintainers = with stdenv.lib.maintainers; [ thoughtpolice relrod ];

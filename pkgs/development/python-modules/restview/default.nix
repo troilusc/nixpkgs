@@ -9,12 +9,11 @@
 
 buildPythonPackage rec {
   pname = "restview";
-  name = "${pname}-${version}";
-  version = "2.7.0";
+  version = "2.9.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "e7842100f3de179c68cfe7c2cf56c61509cd6068bc6dd58ab42c0ade5d5f97ec";
+    sha256 = "de87c84f19526bd4a76505f6d40b51b7bb03ca43b6067c93f82f1c7237ac9e84";
   };
 
   propagatedBuildInputs = [ docutils readme_renderer pygments ];
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   meta = {
     description = "ReStructuredText viewer";
-    homepage = http://mg.pov.lt/restview/;
+    homepage = https://mg.pov.lt/restview/;
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ koral ];
   };

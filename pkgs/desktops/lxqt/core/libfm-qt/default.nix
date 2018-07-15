@@ -1,19 +1,19 @@
 {
   stdenv, fetchFromGitHub, cmake, pkgconfig, lxqt-build-tools,
-  xorg, libfm, menu-cache,
+  pcre, libexif, xorg, libfm, menu-cache,
   qtx11extras, qttools
 }:
 
 stdenv.mkDerivation rec {
   name = "${pname}-${version}";
   pname = "libfm-qt";
-  version = "0.11.2";
+  version = "0.13.1";
 
   src = fetchFromGitHub {
     owner = "lxde";
     repo = pname;
     rev = version;
-    sha256 = "0k2g6bkz7bvawqkjzykbxi18wqsnhbxklqy6aqqkclpzcw45vk5v";
+    sha256 = "1g8j1lw74qvagqhqsx45b290fjwh3jfl3i0366m0w4la03v0rw5j";
   };
 
   nativeBuildInputs = [
@@ -23,6 +23,11 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
+    pcre
+    libexif
+    xorg.libpthreadstubs
+    xorg.libxcb
+    xorg.libXdmcp
     qtx11extras
     qttools
     libfm

@@ -231,10 +231,6 @@ in
               # a collision with an apparently unrelated environment
               # variable with the same name exported by dhcpcd.
               interface_order='lo lo[0-9]*'
-            '' + optionalString config.services.nscd.enable ''
-              # Invalidate the nscd cache whenever resolv.conf is
-              # regenerated.
-              libc_restart='${pkgs.systemd}/bin/systemctl try-restart --no-block nscd.service 2> /dev/null'
             '' + optionalString (length resolvconfOptions > 0) ''
               # Options as described in resolv.conf(5)
               resolv_conf_options='${concatStringsSep " " resolvconfOptions}'
@@ -290,8 +286,8 @@ in
           ln -s /run/systemd/resolve/resolv.conf /run/resolvconf/interfaces/systemd
         ''}
 
-        # Make sure resolv.conf is up to date if not managed by systemd
-        ${optionalString (!config.services.resolved.enable) ''
+        # Make sure resolv.conf is up to date if not managed manually or by systemd
+        ${optionalString (!config.environment.etc?"resolv.conf") ''
           ${pkgs.openresolv}/bin/resolvconf -u
         ''}
       '';

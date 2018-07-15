@@ -1,26 +1,21 @@
-{stdenv, fetchurl, wxGTK, perl, python2, zlib, mesa, libX11}:
-let
-  s = # Generated upstream information
-  rec {
-    baseName="golly";
-    version="2.8";
-    name="${baseName}-${version}";
-    hash="0a4vn2hm7h4b47v2iwip1z3n9y8isf79v08aipl2iqms2m3p5204";
-    url="mirror://sourceforge/project/golly/golly/golly-2.8/golly-2.8-src.tar.gz";
-    sha256="0a4vn2hm7h4b47v2iwip1z3n9y8isf79v08aipl2iqms2m3p5204";
-  };
-  buildInputs = [
-    wxGTK perl python2 zlib mesa libX11
-  ];
-in
+{stdenv, fetchurl, wxGTK, perl, python2, zlib, libGLU_combined, libX11}:
 stdenv.mkDerivation rec {
-  inherit (s) name version;
-  inherit buildInputs;
+  baseName="golly";
+  version = "3.2";
+  name="${baseName}-${version}";
+
   src = fetchurl {
-    inherit (s) url sha256;
+    sha256 = "0cg9mbwmf4q6qxhqlnzrxh9y047banxdb8pd3hgj3smmja2zf0jd";
+    url="mirror://sourceforge/project/golly/golly/golly-${version}/golly-${version}-src.tar.gz";
   };
 
-  sourceRoot="${name}-src/gui-wx/configure";
+  buildInputs = [
+    wxGTK perl python2 zlib libGLU_combined libX11
+  ];
+
+  setSourceRoot = ''
+    sourceRoot=$(echo */gui-wx/configure)
+  '';
 
   # Link against Python explicitly as it is needed for scripts
   makeFlags=[
@@ -35,7 +30,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    inherit (s) version;
+    inherit version;
     description = "Cellular automata simulation program";
     license = stdenv.lib.licenses.gpl2;
     maintainers = [stdenv.lib.maintainers.raskin];

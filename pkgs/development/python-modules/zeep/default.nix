@@ -23,15 +23,13 @@
 , tornado
 }:
 
-let
+buildPythonPackage rec {
   pname = "zeep";
-  version = "2.4.0";
-in buildPythonPackage {
-  name = "${pname}-${version}";
+  version = "3.0.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "8631e2735c5f2219eb18ca4f0615ae482455628518508f69c3690dbfb8238aee";
+    sha256 = "faab59d57275ce35845f42371cca83b3957982cdca9621228153fb99c770c4fc";
   };
 
   propagatedBuildInputs = [

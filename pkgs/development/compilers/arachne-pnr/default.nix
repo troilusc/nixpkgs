@@ -1,20 +1,28 @@
 { stdenv, fetchFromGitHub, icestorm }:
 
+with builtins;
+
 stdenv.mkDerivation rec {
   name = "arachne-pnr-${version}";
-  version = "2017.06.29";
+  version = "2018.05.03";
 
   src = fetchFromGitHub {
-    owner = "cseed";
-    repo = "arachne-pnr";
-    rev = "7e135edb31feacde85ec5b7e5c03fc9157080977";
-    sha256 = "1wszcx6hgw4q4r778zswrlwdwvwxq834bkajck8w9yfqwxs9lmq8";
+    owner  = "cseed";
+    repo   = "arachne-pnr";
+    rev    = "ea2d04215bc0fd6072cda244caeb6670892033b3";
+    sha256 = "0qhf5djyh0pzmgv33rjnnqq6asmmwxjdadvr18a83iy9pll6gg5k";
   };
 
   enableParallelBuilding = true;
   makeFlags =
-    [ "PREFIX=$(out)" "ICEBOX=${icestorm}/share/icebox"
+    [ "PREFIX=$(out)"
+      "ICEBOX=${icestorm}/share/icebox"
     ];
+
+  patchPhase = ''
+    substituteInPlace ./Makefile \
+      --replace 'echo UNKNOWN' 'echo ${substring 0 10 src.rev}'
+  '';
 
   meta = {
     description = "Place and route tool for FPGAs";

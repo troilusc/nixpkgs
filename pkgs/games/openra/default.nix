@@ -1,11 +1,11 @@
 { stdenv, fetchFromGitHub, mono, makeWrapper, lua
 , SDL2, freetype, openal, systemd, pkgconfig,
-  dotnetPackages, gnome3, curl, unzip, which
+  dotnetPackages, gnome3, curl, unzip, which, python
 }:
 
 stdenv.mkDerivation rec {
   name = "openra-${version}";
-  version = "20171014";
+  version = "20180307";
 
   meta = with stdenv.lib; {
     description = "Real Time Strategy game engine recreating the C&C titles";
@@ -19,7 +19,7 @@ stdenv.mkDerivation rec {
     owner = "OpenRA";
     repo = "OpenRA";
     rev = "release-${version}";
-    sha256 = "0nlwpmiwhjs3qc2lxwnrh4p874v5y6mf4avi6bqgr1wvzc43n8wr";
+    sha256 = "05c6vrmlgzfxgfx1idqmp6czmr079px3n57q5ahnwzqvcl11a2jj";
 
     extraPostFetch = ''
       sed -i 's,curl,curl --insecure,g' $out/thirdparty/{fetch-thirdparty-deps,noget}.sh
@@ -60,7 +60,7 @@ stdenv.mkDerivation rec {
 
   postInstall = with stdenv.lib; let
     runtime = makeLibraryPath [ SDL2 freetype openal systemd lua ];
-    binaries= makeBinPath [ which mono gnome3.zenity ];
+    binaries= makeBinPath [ which mono gnome3.zenity python ];
   in ''
     wrapProgram $out/lib/openra/launch-game.sh \
       --prefix PATH : "${binaries}" \

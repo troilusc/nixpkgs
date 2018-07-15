@@ -30,9 +30,11 @@ stdenv.mkDerivation rec {
       configureFlags+=" --enable-appdefaultdir=$out/share/X11/app-defaults"
     '';
 
+  hardeningDisable = [ "format" ]; # no build output otherwise
+
   meta = with lib; {
     description = "Screen locker for the X Window System";
-    homepage = http://www.tux.org/~bagleyd/xlockmore.html;
+    homepage = http://sillycycle.com/xlockmore.html;
     license = licenses.gpl2;
     maintainers = with maintainers; [ pSub ];
     platforms = platforms.linux;

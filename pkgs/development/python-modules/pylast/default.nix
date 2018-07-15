@@ -2,12 +2,11 @@
 
 buildPythonPackage rec {
   pname = "pylast";
-  version = "1.9.0";
-  name = "${pname}-${version}";
+  version = "2.3.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "ae1c4105cbe704d9ac10ba57ac4c26bc576cc33978f1b578101b20c6a2360ca4";
+    sha256 = "f1e8615bac27386712ab74338e6dbd01ff7adbf6648a3debf921cef6bad80014";
   };
 
   propagatedBuildInputs = [ certifi six ];

@@ -1,14 +1,12 @@
-{ stdenv, fetchurl, pkgconfig, intltool, itstool, libxml2, gnome3, mate, hicolor_icon_theme, wrapGAppsHook }:
+{ stdenv, fetchurl, pkgconfig, intltool, itstool, libxml2, gnome3, mate, hicolor-icon-theme, wrapGAppsHook }:
 
 stdenv.mkDerivation rec {
   name = "engrampa-${version}";
-  version = "${major-ver}.${minor-ver}";
-  major-ver = "1.18";
-  minor-ver = "2";
+  version = "1.21.0";
 
   src = fetchurl {
-    url = "http://pub.mate-desktop.org/releases/${major-ver}/${name}.tar.xz";
-    sha256 = "0d98zhqqc7qdnxcf0195kd04xmhijc0w2qrn6q61zd0daiswnv98";
+    url = "http://pub.mate-desktop.org/releases/${mate.getRelease version}/${name}.tar.xz";
+    sha256 = "0y79rzmv3i03la443bp8f6gsgm03vr4nd88npwrvjqlxs59lg1gw";
   };
 
   nativeBuildInputs = [
@@ -22,7 +20,7 @@ stdenv.mkDerivation rec {
     libxml2
     gnome3.gtk
     mate.caja
-    hicolor_icon_theme
+    hicolor-icon-theme
     mate.mate-desktop
   ];
 

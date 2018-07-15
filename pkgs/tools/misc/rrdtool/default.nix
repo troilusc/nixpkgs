@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
   name = "rrdtool-1.7.0";
 
   src = fetchurl {
-    url = "http://oss.oetiker.ch/rrdtool/pub/${name}.tar.gz";
+    url = "https://oss.oetiker.ch/rrdtool/pub/${name}.tar.gz";
     sha256 = "0ssjqpa0dwwzbylc0drmlbq922qcw8crffc0rpr805xr6n4k8zgr";
   };
 
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with stdenv.lib; {
-    homepage = http://oss.oetiker.ch/rrdtool/;
+    homepage = https://oss.oetiker.ch/rrdtool/;
     description = "High performance logging in Round Robin Databases";
     license = licenses.gpl2;
     platforms = platforms.linux ++ platforms.darwin;

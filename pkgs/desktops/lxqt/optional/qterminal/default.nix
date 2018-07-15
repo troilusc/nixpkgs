@@ -3,13 +3,13 @@
 stdenv.mkDerivation rec {
   name = "${pname}-${version}";
   pname = "qterminal";
-  version = "0.7.1";
+  version = "0.9.0";
 
-  srcs = fetchFromGitHub {
+  src = fetchFromGitHub {
     owner = "lxde";
     repo = pname;
     rev = version;
-    sha256 = "14pfwii8axyswrkwvfmc2i0a07fjnhpyk3hh06qkbj2w3r00xhyb";
+    sha256 = "1z9wlyj5i192jfq3dcxjf8wzx9x332f19c9ll7zv69cq21kyy9wn";
   };
 
   nativeBuildInputs = [

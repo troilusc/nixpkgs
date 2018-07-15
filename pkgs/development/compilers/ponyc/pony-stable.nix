@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   name = "pony-stable-${version}";
-  version = "0.0.1";
+  version = "0.1.4";
 
   src = fetchFromGitHub {
     owner = "ponylang";
     repo = "pony-stable";
     rev = version;
-    sha256 = "0q05135mnzzdwam7cnmxq34clqhmc83yp2gi63sx20c74rcw3p6v";
+    sha256 = "18ncxdk37r9sp2wnrgqj29nvqljqq9m154pkdv8b6b5k9knpradx";
   };
 
   buildInputs = [ ponyc ];
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
     description = "A simple dependency manager for the Pony language.";
     homepage = https://www.ponylang.org;
     license = stdenv.lib.licenses.bsd2;
-    maintainers = with stdenv.lib.maintainers; [ dipinhora kamilchm ];
+    maintainers = with stdenv.lib.maintainers; [ dipinhora kamilchm patternspandemic ];
     platforms = stdenv.lib.platforms.unix;
   };
 }

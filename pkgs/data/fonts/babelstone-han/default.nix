@@ -1,19 +1,19 @@
 {stdenv, fetchzip}:
 
 let
-  version = "10.0.0";
+  version = "11.0.3";
 in fetchzip {
   name = "babelstone-han-${version}";
 
-  url = http://www.babelstone.co.uk/Fonts/0816/BabelStoneHan.zip;
+  url = http://www.babelstone.co.uk/Fonts/Download/BabelStoneHan.zip;
   postFetch = ''
     mkdir -p $out/share/fonts/truetype
     unzip $downloadedFile '*.ttf' -d $out/share/fonts/truetype
   '';
-  sha256 = "0648hv5c1hq3bq7mlk7bnmflzzqj4wh137bjqyrwj5hy3nqzvl5r";
+  sha256 = "0c8s21kllyilwivrb8gywq818y67w3zpann34hz36vy0wyiswn1c";
 
   meta = with stdenv.lib; {
-    description = "Unicode CJK font with over 32600 Han characters";
+    description = "Unicode CJK font with over 36000 Han characters";
     homepage = http://www.babelstone.co.uk/Fonts/Han.html;
 
     license = licenses.free;

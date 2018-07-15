@@ -1,6 +1,7 @@
 { mkDerivation
 , lib
 , fetchurl
+, fetchpatch
 , extra-cmake-modules
 , kdoctools
 , kbookmarks
@@ -29,13 +30,13 @@
 
 let
   pname = "konversation";
-  version = "1.7.2";
+  version = "1.7.4";
 in mkDerivation rec {
   name = "${pname}-${version}";
 
   src = fetchurl {
     url = "mirror://kde/stable/${pname}/${version}/src/${name}.tar.xz";
-    sha256 = "0616h59bsw5c3y8lij56v3fhv9by0rwdfcaa83yfxqg4rs26xyaz";
+    sha256 = "0y4rj4fcl1wsi3y1fhnzad9nf4llwrnipfm9mfm55kqnx1zmpvqp";
   };
 
   buildInputs = [
@@ -67,6 +68,13 @@ in mkDerivation rec {
   nativeBuildInputs = [
     extra-cmake-modules
     kdoctools
+  ];
+
+  patches = [
+    (fetchpatch {
+      url = "https://cgit.kde.org/konversation.git/patch/?id=20018b3d0798421c9cb8a9d983e5a5b34bd88e8d";
+      sha256 = "0y5m5zimfhc0d1xnkzs05c8ig11lhwdn04fk76vi7966hx8wggnn";
+    })
   ];
 
   meta = {

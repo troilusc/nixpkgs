@@ -9,7 +9,7 @@
 , atk
 , cairo
 , dbus
-, dbus_glib
+, dbus-glib
 , fontconfig
 , freetype
 , gdk_pixbuf
@@ -42,8 +42,8 @@
 # Wrapper runtime
 , coreutils
 , glibcLocales
-, hicolor_icon_theme
-, shared_mime_info
+, hicolor-icon-theme
+, shared-mime-info
 
 # Whether to disable multiprocess support to work around crashing tabs
 # TODO: fix the underlying problem instead of this terrible work-around
@@ -62,7 +62,7 @@ let
     atk
     cairo
     dbus
-    dbus_glib
+    dbus-glib
     fontconfig
     freetype
     gdk_pixbuf
@@ -98,7 +98,7 @@ let
   fteLibPath = makeLibraryPath [ stdenv.cc.cc gmp ];
 
   # Upstream source
-  version = "7.0.8";
+  version = "7.5.6";
 
   lang = "en-US";
 
@@ -108,7 +108,7 @@ let
         "https://github.com/TheTorProject/gettorbrowser/releases/download/v${version}/tor-browser-linux64-${version}_${lang}.tar.xz"
         "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux64-${version}_${lang}.tar.xz"
       ];
-      sha256 = "0bi4l4ma40ifsajvjpwv6ixphijqvb7yrci2jcyykh3j41ndfjf2";
+      sha256 = "07z7lg5firyah0897pr04wqnbgf4mvsnk3gq2zgsg1rrwladxz5s";
     };
 
     "i686-linux" = fetchurl {
@@ -116,7 +116,7 @@ let
         "https://github.com/TheTorProject/gettorbrowser/releases/download/v${version}/tor-browser-linux32-${version}_${lang}.tar.xz"
         "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux32-${version}_${lang}.tar.xz"
       ];
-      sha256 = "182q1gb8jnk92wxr7m977yxcksa8d3zg90qbsja1raym2vhqaf73";
+      sha256 = "1s0k82ch7ypjyc5k5rb4skb9ylnp7b9ipvf8gb7pdhb8m4zjk461";
     };
   };
 in
@@ -261,8 +261,8 @@ stdenv.mkDerivation rec {
     EOF
 
     WRAPPER_XDG_DATA_DIRS=${concatMapStringsSep ":" (x: "${x}/share") [
-      hicolor_icon_theme
-      shared_mime_info
+      hicolor-icon-theme
+      shared-mime-info
     ]}
 
     # Generate wrapper
@@ -340,7 +340,7 @@ stdenv.mkDerivation rec {
       \
       TMPDIR="\''${TMPDIR:-/tmp}" \
       HOME="\$HOME" \
-      XAUTHORITY="\$XAUTHORITY" \
+      XAUTHORITY="\''${XAUTHORITY:-}" \
       DISPLAY="\$DISPLAY" \
       DBUS_SESSION_BUS_ADDRESS="\$DBUS_SESSION_BUS_ADDRESS" \
       \

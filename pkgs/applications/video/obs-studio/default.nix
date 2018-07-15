@@ -29,13 +29,13 @@ let
   optional = stdenv.lib.optional;
 in stdenv.mkDerivation rec {
   name = "obs-studio-${version}";
-  version = "20.1.0";
+  version = "21.1.2";
 
   src = fetchFromGitHub {
     owner = "jp9000";
     repo = "obs-studio";
     rev = "${version}";
-    sha256 = "1366nl301rhz8cfbq89ixiq1hdxdn8iimz9xyln274anghz02sbr";
+    sha256 = "1gl6qibvckczk3yl44h3yshml6sn3izwn58qpxils5837rpkwlc5";
   };
 
   patches = [ ./find-xcb.patch ];
@@ -70,7 +70,7 @@ in stdenv.mkDerivation rec {
 
   postInstall = ''
       wrapProgram $out/bin/obs \
-        --prefix "LD_LIBRARY_PATH" : "${xorg.libX11.out}/lib"
+        --prefix "LD_LIBRARY_PATH" : "${xorg.libX11.out}/lib:${vlc}/lib"
   '';
 
   meta = with stdenv.lib; {

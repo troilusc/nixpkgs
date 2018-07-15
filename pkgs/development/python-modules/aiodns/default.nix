@@ -4,7 +4,6 @@
 buildPythonPackage rec {
   pname = "aiodns";
   version = "1.1.1";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
   doCheck = false;
 
   meta = with stdenv.lib; {
-    homepage = http://github.com/saghul/aiodns;
+    homepage = https://github.com/saghul/aiodns;
     license = licenses.mit;
     description = "Simple DNS resolver for asyncio";
   };

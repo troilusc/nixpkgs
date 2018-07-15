@@ -2,18 +2,17 @@
   pytest, pytestrunner,  mccabe, configparser, backports_functools_lru_cache }:
 
 buildPythonPackage rec {
-  name = "${pname}-${version}";
   pname = "pylint";
-  version = "1.7.4";
+  version = "1.9.2";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1f65b3815c3bf7524b845711d54c4242e4057dd93826586620239ecdfe591fb1";
+    sha256 = "fff220bcb996b4f7e2b0f6812fd81507b72ca4d8c4d05daf2655c333800cb9b3";
   };
 
   buildInputs = [ pytest pytestrunner mccabe configparser backports_functools_lru_cache ];
 
-  propagatedBuildInputs = [ astroid configparser isort ];
+  propagatedBuildInputs = [ astroid configparser isort mccabe ];
 
   postPatch = ''
     # Remove broken darwin tests
@@ -33,7 +32,7 @@ buildPythonPackage rec {
   '';
 
   meta = with stdenv.lib; {
-    homepage = http://www.logilab.org/project/pylint;
+    homepage = https://www.logilab.org/project/pylint;
     description = "A bug and style checker for Python";
     platforms = platforms.all;
     license = licenses.gpl1Plus;

@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, lib, xlibs }:
+{ stdenv, fetchurl, lib, xorg }:
 
 let
   name = "scilab-bin-${ver}";
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
   inherit name;
 
   src = fetchurl {
-    url = "http://www.scilab.org/download/${ver}/scilab-${ver}.bin.linux-${architecture}.tar.gz";
+    url = "https://www.scilab.org/download/${ver}/scilab-${ver}.bin.linux-${architecture}.tar.gz";
     sha256 =
       if stdenv.system == "i686-linux" then
         "6143a95ded40411a35630a89b365875a6526cd4db1e2865ac5612929a7db937a"
@@ -33,12 +33,12 @@ stdenv.mkDerivation rec {
 
   libPath = lib.makeLibraryPath [
     stdenv.cc.cc
-    xlibs.libX11
-    xlibs.libXext
-    xlibs.libXi
-    xlibs.libXrender
-    xlibs.libXtst
-    xlibs.libXxf86vm
+    xorg.libX11
+    xorg.libXext
+    xorg.libXi
+    xorg.libXrender
+    xorg.libXtst
+    xorg.libXxf86vm
   ];
 
   phases = [ "unpackPhase" "fixupPhase" "installPhase" ];

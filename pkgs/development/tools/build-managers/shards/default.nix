@@ -2,16 +2,16 @@
 
 stdenv.mkDerivation rec {
   name = "shards-${version}";
-  version = "0.7.1";
+  version = "0.8.1";
 
   src = fetchurl {
     url = "https://github.com/crystal-lang/shards/archive/v${version}.tar.gz";
-    sha256 = "31de819c66518479682ec781a39ef42c157a1a8e6e865544194534e2567cb110";
+    sha256 = "198768izbsqqp063847r2x9ddcf4qfxx7vx7c6gwbmgjmjv4mivm";
   };
 
   buildInputs = [ crystal libyaml which ];
 
-  buildFlags = [ "CRFLAGS=" "release" ];
+  buildFlags = [ "CRFLAGS=--release" ];
 
   installPhase = ''
     mkdir -p $out/bin

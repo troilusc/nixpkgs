@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aiofiles";
   version = "0.3.2";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,6 @@ buildPythonPackage rec {
     description = "File support for asyncio";
     homepage = https://github.com/Tinche/aiofiles;
     license = with lib.licenses; [ asl20 ];
-    maintainer = with lib.maintainers; [ fridh ];
+    maintainers = with lib.maintainers; [ fridh ];
   };
 }

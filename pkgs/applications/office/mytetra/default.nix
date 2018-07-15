@@ -1,12 +1,12 @@
 { stdenv, fetchurl, qmake, qtsvg }:
 
 let
-  version = "1.42.2";
+  version = "1.43.27";
 in stdenv.mkDerivation rec {
   name = "mytetra-${version}";
   src = fetchurl {
     url = "https://github.com/xintrea/mytetra_dev/archive/v.${version}.tar.gz";
-    sha256 = "1ah44nf4ksxkh01a2zmgvvby4pwczhyq5vcp270rf6visp8v9804";
+    sha256 = "1gzr11jy1bvnp28w2ar3wmh76g55jn9nra5la5qasnal6b5pg28h";
   };
 
   nativeBuildInputs = [ qmake ];
@@ -25,7 +25,7 @@ in stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "Smart manager for information collecting";
-    homepage = http://webhamster.ru/site/page/index/articles/projectcode/138;
+    homepage = https://webhamster.ru/site/page/index/articles/projectcode/138;
     license = licenses.gpl3;
     maintainers = [ maintainers.gnidorah ];
     platforms = platforms.linux;

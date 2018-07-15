@@ -1,30 +1,35 @@
-{ stdenv, fetchurl, boehmgc, libatomic_ops, pcre, libevent, libiconv, llvm, makeWrapper }:
+{ stdenv, fetchurl, makeWrapper
+, boehmgc, libatomic_ops, pcre, libevent, libiconv, llvm, clang }:
 
 stdenv.mkDerivation rec {
   name = "crystal-${version}";
-  version = "0.23.1";
+  version = "0.25.0";
 
   src = fetchurl {
     url = "https://github.com/crystal-lang/crystal/archive/${version}.tar.gz";
-    sha256 = "8cf1b9a4eab29fca2f779ea186ae18f7ce444ce189c621925fa1a0c61dd5ff55";
+    sha256 = "1pnx21ky6cqfyv6df4mmjnyd1yh1bvcqkdzq6f0mk0yrkcl57k3q";
   };
 
-  prebuiltName = "crystal-0.23.0-1";
+  prebuiltName = "crystal-0.25.0-1";
   prebuiltSrc = let arch = {
     "x86_64-linux" = "linux-x86_64";
     "i686-linux" = "linux-i686";
     "x86_64-darwin" = "darwin-x86_64";
   }."${stdenv.system}" or (throw "system ${stdenv.system} not supported");
   in fetchurl {
-    url = "https://github.com/crystal-lang/crystal/releases/download/0.23.0/${prebuiltName}-${arch}.tar.gz";
+    url = "https://github.com/crystal-lang/crystal/releases/download/0.25.0/${prebuiltName}-${arch}.tar.gz";
     sha256 = {
-      "x86_64-linux" = "0nhs7swbll8hrk15kmmywngkhij80x62axiskb1gjmiwvzhlh0qx";
-      "i686-linux" = "03xp8d3lqflzzm26lpdn4yavj87qzgd6xyrqxp2pn9ybwrq8fx8a";
-      "x86_64-darwin" = "1prz6c1gs8z7dgpdy2id2mjn1c8f5p2bf9b39985bav448njbyjz";
+      "x86_64-linux" = "1q006086pbbvhmscbjzzgbdq1jkppd4p4kl9z9fn9j6np8fhi8ms";
+      "i686-linux" = "074ndm9n0mzsa7dkl3chhf234l85msm99yjksa5980lyqynyrw1d";
+      "x86_64-darwin" = "006f2j5984dkp5lsq8kns5mkxbhj50syjvzqk9z931pxl92wc7iy";
     }."${stdenv.system}";
   };
 
-  srcs = [ src prebuiltSrc ];
+  unpackPhase = ''
+    mkdir ${prebuiltName}
+    tar --strip-components=1 -C ${prebuiltName} -xf ${prebuiltSrc}
+    tar xf ${src}
+  '';
 
   # crystal on Darwin needs libiconv to build
   libs = [
@@ -41,36 +46,29 @@ stdenv.mkDerivation rec {
 
   sourceRoot = "${name}";
 
-  fixPrebuiltBinary = if stdenv.isDarwin then ''
-    wrapProgram ../${prebuiltName}/embedded/bin/crystal \
-        --suffix DYLD_LIBRARY_PATH : $libPath
-  ''
-  else ''
-    patchelf --set-interpreter $(cat $NIX_CC/nix-support/dynamic-linker) \
-      ../${prebuiltName}/embedded/bin/crystal
-    patchelf --set-rpath ${ stdenv.lib.makeLibraryPath [ stdenv.cc.cc ] } \
-      ../${prebuiltName}/embedded/bin/crystal
-  '';
-
   preBuild = ''
     patchShebangs bin/crystal
     patchShebangs ../${prebuiltName}/bin/crystal
-    ${fixPrebuiltBinary}
     export PATH="$(pwd)/../${prebuiltName}/bin:$PATH"
   '';
 
-  makeFlags = [ "CRYSTAL_CONFIG_VERSION=${version}" "release=1" "all" "doc" ];
+  makeFlags = [ "CRYSTAL_CONFIG_VERSION=${version}"
+                "FLAGS=--no-debug"
+                "release=1"
+                "all" "docs"
+              ];
 
   installPhase = ''
     install -Dm755 .build/crystal $out/bin/crystal
     wrapProgram $out/bin/crystal \
-        --suffix CRYSTAL_PATH : $out/lib/crystal \
+        --suffix PATH : ${clang}/bin \
+        --suffix CRYSTAL_PATH : lib:$out/lib/crystal \
         --suffix LIBRARY_PATH : $libPath
     install -dm755 $out/lib/crystal
     cp -r src/* $out/lib/crystal/
 
     install -dm755 $out/share/doc/crystal/api
-    cp -r doc/* $out/share/doc/crystal/api/
+    cp -r docs/* $out/share/doc/crystal/api/
     cp -r samples $out/share/doc/crystal/
 
     install -Dm644 etc/completion.bash $out/share/bash-completion/completions/crystal
@@ -83,7 +81,7 @@ stdenv.mkDerivation rec {
 
   dontStrip = true;
 
-  enableParallelBuilding = true;
+  enableParallelBuilding = false;
 
   meta = {
     description = "A compiled language with Ruby like syntax and type inference";

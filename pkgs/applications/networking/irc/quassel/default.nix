@@ -24,8 +24,6 @@ let
     buildCore = monolithic || daemon;
 in
 
-assert stdenv.isLinux;
-
 assert monolithic -> !client && !daemon;
 assert client || daemon -> !monolithic;
 assert !buildClient -> !withKDE; # KDE is used by the client only
@@ -73,8 +71,10 @@ in with stdenv; mkDerivation rec {
           --prefix GIO_EXTRA_MODULES : "${dconf}/lib/gio/modules"
     '';
 
+  patches = [ ./qt5_11.patch ];
+
   meta = with stdenv.lib; {
-    homepage = http://quassel-irc.org/;
+    homepage = https://quassel-irc.org/;
     description = "Qt/KDE distributed IRC client suppporting a remote daemon";
     longDescription = ''
       Quassel IRC is a cross-platform, distributed IRC client,

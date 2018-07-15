@@ -17,7 +17,7 @@ let
   gititSh = hsPkgs: extras: with pkgs; let
     env = gititWithPkgs hsPkgs extras;
   in writeScript "gitit" ''
-    #!${stdenv.shell}
+    #!${runtimeShell}
     cd $HOME
     export NIX_GHC="${env}/bin/ghc"
     export NIX_GHCPKG="${env}/bin/ghc-pkg"
@@ -645,15 +645,15 @@ in
 
   config = mkIf cfg.enable {
 
-    users.extraUsers.gitit = {
-      group = config.users.extraGroups.gitit.name;
+    users.users.gitit = {
+      group = config.users.groups.gitit.name;
       description = "Gitit user";
       home = homeDir;
       createHome = true;
       uid = config.ids.uids.gitit;
     };
 
-    users.extraGroups.gitit.gid = config.ids.gids.gitit;
+    users.groups.gitit.gid = config.ids.gids.gitit;
 
     systemd.services.gitit = let
       uid = toString config.ids.uids.gitit;
@@ -715,8 +715,8 @@ NAMED
       '';
 
       serviceConfig = {
-        User = config.users.extraUsers.gitit.name;
-        Group = config.users.extraGroups.gitit.name;
+        User = config.users.users.gitit.name;
+        Group = config.users.groups.gitit.name;
         ExecStart = with cfg; gititSh haskellPackages extraPackages;
       };
     };

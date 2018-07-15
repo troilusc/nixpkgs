@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
   version = "B.${numVersion}";
 
   src = fetchurl {
-    url = "http://ezix.org/software/files/lshw-${version}.tar.gz";
+    url = "https://ezix.org/software/files/lshw-${version}.tar.gz";
     sha256 = "0brwra4jld0d53d7jsgca415ljglmmx1l2iazpj4ndilr48yy8mf";
   };
 
@@ -38,7 +38,7 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = with stdenv.lib; {
-    homepage = http://ezix.org/project/wiki/HardwareLiSter;
+    homepage = https://ezix.org/project/wiki/HardwareLiSter;
     description = "Provide detailed information on the hardware configuration of the machine";
     license = licenses.gpl2;
     maintainers = with maintainers; [ phreedom jgeerds ];

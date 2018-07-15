@@ -46,7 +46,7 @@ in {
 
   config = mkIf cfg.enable {
 
-    users.extraUsers = singleton {
+    users.users = singleton {
       name = "fusion-inventory";
       description = "FusionInventory user";
     };
@@ -55,9 +55,6 @@ in {
       description = "Fusion Inventory Agent";
       wantedBy = [ "multi-user.target" ];
 
-      environment = {
-        OPTIONS = "--no-category=software";
-      };
       serviceConfig = {
         ExecStart = "${pkgs.fusionInventory}/bin/fusioninventory-agent --conf-file=${configFile} --daemon --no-fork";
       };

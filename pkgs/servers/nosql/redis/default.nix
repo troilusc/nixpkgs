@@ -1,12 +1,12 @@
 { stdenv, fetchurl, lua }:
 
 stdenv.mkDerivation rec {
-  version = "4.0.2";
+  version = "4.0.10";
   name = "redis-${version}";
 
   src = fetchurl {
     url = "http://download.redis.io/releases/${name}.tar.gz";
-    sha256 = "04s8cgvwjj1979s3hg8zkwc9pyn3jkjpz5zidp87kfcipifr385i";
+    sha256 = "194cydhv3hf4v95ifvjvsqrs4jn3ffrkg5lvxj5d3y04lwsp9dhx";
   };
 
   buildInputs = [ lua ];
@@ -15,7 +15,7 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = with stdenv.lib; {
-    homepage = http://redis.io;
+    homepage = https://redis.io;
     description = "An open source, advanced key-value store";
     license = stdenv.lib.licenses.bsd3;
     platforms = platforms.unix;

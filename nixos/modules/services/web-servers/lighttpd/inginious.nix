@@ -113,7 +113,6 @@ in
 
     tasksDirectory = mkOption {
       type = types.path;
-      default = "${inginious}/lib/python2.7/site-packages/inginious/tasks";
       example = "/var/lib/INGInious/tasks";
       description = ''
         Path to the tasks folder.
@@ -195,7 +194,7 @@ in
           storageDriver = mkDefault "overlay";
         };
 
-        users.extraUsers."lighttpd".extraGroups = [ "docker" ];
+        users.users."lighttpd".extraGroups = [ "docker" ];
 
         # Ensure that docker has pulled the required images.
         systemd.services.inginious-prefetch = {
@@ -218,6 +217,7 @@ in
 
       # Common
       {
+        services.lighttpd.inginious.tasksDirectory = mkDefault "${inginious}/lib/python2.7/site-packages/inginious/tasks";
         # To access inginous tools (like inginious-test-task)
         environment.systemPackages = [ inginious ];
 

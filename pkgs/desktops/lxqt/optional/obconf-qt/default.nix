@@ -1,15 +1,15 @@
-{ stdenv, fetchFromGitHub, cmake, pkgconfig, qt5, xorg, lxqt, openbox, hicolor_icon_theme }:
+{ stdenv, fetchFromGitHub, cmake, pkgconfig, pcre, qt5, xorg, lxqt, openbox, hicolor-icon-theme }:
 
 stdenv.mkDerivation rec {
   name = "${pname}-${version}";
   pname = "obconf-qt";
-  version = "0.11.1";
+  version = "0.13.0";
 
-  srcs = fetchFromGitHub {
+  src = fetchFromGitHub {
     owner = "lxde";
     repo = pname;
     rev = version;
-    sha256 = "1w94g8jk2j9qrkwg3i6qwgai2sj1m657bbk2zlk9bc3qvzmwxwrc";
+    sha256 = "0mixf35p7b563f77vnikk9b1wqhbdawp723sd30rfql76gkjwjcn";
   };
 
   nativeBuildInputs = [
@@ -19,6 +19,7 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
+    pcre
     qt5.qtbase
     qt5.qttools
     qt5.qtx11extras
@@ -26,7 +27,7 @@ stdenv.mkDerivation rec {
     xorg.libXdmcp
     xorg.libSM
     openbox
-    hicolor_icon_theme
+    hicolor-icon-theme
   ];
 
   cmakeFlags = [ "-DPULL_TRANSLATIONS=NO" ];

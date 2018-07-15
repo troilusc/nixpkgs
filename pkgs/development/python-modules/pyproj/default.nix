@@ -9,7 +9,6 @@
 buildPythonPackage (rec {
   pname = "pyproj";
   version = "1.9.5.1";
-  name = "${pname}-${version}";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,7 +27,7 @@ buildPythonPackage (rec {
 
   meta = {
     description = "Python interface to PROJ.4 library";
-    homepage = http://github.com/jswhit/pyproj;
+    homepage = https://github.com/jswhit/pyproj;
     license = with lib.licenses; [ isc ];
   };
 } // (if proj == null then {} else { PROJ_DIR = proj; }))

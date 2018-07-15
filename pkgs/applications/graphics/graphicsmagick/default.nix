@@ -2,14 +2,13 @@
 , libjpeg, libpng, libtiff, libxml2, zlib, libtool, xz, libX11
 , libwebp, quantumdepth ? 8, fixDarwinDylibNames }:
 
-let version = "1.3.26"; in
-
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   name = "graphicsmagick-${version}";
+  version = "1.3.30";
 
   src = fetchurl {
     url = "mirror://sourceforge/graphicsmagick/GraphicsMagick-${version}.tar.xz";
-    sha256 = "122zgs96dqrys62mnh8x5yvfff6km4d3yrnvaxzg3mg5sprib87v";
+    sha256 = "1warar0731xf94r4bn5x1km85rjabl4iq8r0dk3ywmczap3farfr";
   };
 
   patches = [

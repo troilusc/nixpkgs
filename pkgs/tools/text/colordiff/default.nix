@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     urls = [
-      "http://www.colordiff.org/${name}.tar.gz"
+      "https://www.colordiff.org/${name}.tar.gz"
       "http://www.colordiff.org/archive/${name}.tar.gz"
     ];
     sha256 = "1q6n60n4b9fnzccxyxv04mxjsql4ddq17vl2c74ijvjdhpcfrkr9";
@@ -22,6 +22,5 @@ stdenv.mkDerivation rec {
     homepage = https://www.colordiff.org/;
     license = licenses.gpl3;
     platforms = platforms.linux ++ platforms.darwin;
-    maintainers = with maintainers; [ nckx ];
   };
 }

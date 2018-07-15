@@ -1,9 +1,10 @@
 { stdenv, callPackage, fetchurl, makeWrapper
-, alsaLib, libX11, libXcursor, libXinerama, libXrandr, libXi, mesa_noglu
+, alsaLib, libX11, libXcursor, libXinerama, libXrandr, libXi, libGL
 , factorio-utils
 , releaseType
 , mods ? []
 , username ? "" , password ? ""
+, experimental ? false
 }:
 
 assert releaseType == "alpha"
@@ -14,22 +15,41 @@ let
 
   # NB If you nix-prefetch-url any of these, be sure to add a --name arg,
   #    where the ultimate "_" (before the version) is changed to a "-".
+  branch = if experimental then "experimental" else "stable";
   binDists = {
     x86_64-linux = let bdist = bdistForArch { inUrl = "linux64"; inTar = "x64"; }; in {
-      alpha    = bdist { sha256 = "0phikwv00mbwpz4207wm6gz6blarm0b9p1f013ha2w5g7c2dxq4s"; fetcher = authenticatedFetch; };
-      headless = bdist { sha256 = "1m170cl8ji6k3d3jm6n48wx3b7xfsxp4wkaixh0qszaqzafsglp0"; };
-      demo     = bdist { sha256 = "03nwn4838yhqq0r76pf2m4wxi32rsq0knsxmq3qq4ycji89q1dyc"; version = "0.15.33"; };
+      alpha = {
+        stable        = bdist { sha256 = "0b4hbpdcrh5hgip9q5dkmw22p66lcdhnr0kmb0w5dw6yi7fnxxh0"; fetcher = authenticatedFetch; };
+        experimental  = bdist { sha256 = "1qwfivl5wf0ii8c4prdl4yili23qimsh2cj874r37q3ygpjk3bd3"; version = "0.16.50"; fetcher = authenticatedFetch; };
+      };
+      headless = {
+        stable        = bdist { sha256 = "0zrnpg2js0ysvx9y50h3gajldk16mv02dvrwnkazh5kzr1d9zc3c"; };
+        experimental  = bdist { sha256 = "00691kr85p58qpxf3889p20nrgsvsyspx3c8yd11dkg46wly06z1"; version = "0.16.50"; };
+      };
+      demo = {
+        stable        = bdist { sha256 = "0zf61z8937yd8pyrjrqdjgd0rjl7snwrm3xw86vv7s7p835san6a"; version = "0.16.51"; };
+        experimental  = bdist { };
+      };
     };
     i686-linux = let bdist = bdistForArch { inUrl = "linux32"; inTar = "i386"; }; in {
-      alpha    = bdist { sha256 = "0nnfkxxqnywx1z05xnndgh71gp4izmwdk026nnjih74m2k5j086l"; version = "0.14.23"; nameMut = asGz; };
-      headless = bdist { };
-      demo     = bdist { };
+      alpha = {
+        stable        = bdist { sha256 = "0nnfkxxqnywx1z05xnndgh71gp4izmwdk026nnjih74m2k5j086l"; version = "0.14.23"; nameMut = asGz; };
+        experimental  = bdist { };
+      };
+      headless = {
+        stable        = bdist { };
+        experimental  = bdist { };
+      };
+      demo = {
+        stable        = bdist { };
+        experimental  = bdist { };
+      };
     };
   };
-  actual = binDists.${stdenv.system}.${releaseType} or (throw "Factorio: unsupported platform");
+  actual = binDists.${stdenv.system}.${releaseType}.${branch} or (throw "Factorio: unsupported platform");
 
   bdistForArch = arch: { sha256 ? null
-                       , version ? "0.15.34"
+                       , version ? "0.16.51"
                        , fetcher ? fetchurl
                        , nameMut ? x: x
                        }:
@@ -120,7 +140,7 @@ let
         libXinerama
         libXrandr
         libXi
-        mesa_noglu
+        libGL
       ];
 
       installPhase = base.installPhase + ''

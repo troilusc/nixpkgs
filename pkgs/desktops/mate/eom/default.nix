@@ -1,36 +1,34 @@
-{ stdenv, fetchurl, pkgconfig, intltool, itstool, dbus_glib, exempi, lcms2, libexif, libjpeg, librsvg, libxml2, shared_mime_info, gnome3, mate, hicolor_icon_theme, wrapGAppsHook }:
+{ stdenv, fetchurl, pkgconfig, intltool, itstool, dbus-glib, exempi, lcms2, libexif, libjpeg, librsvg, libxml2, shared-mime-info, gnome3, mate, hicolor-icon-theme, wrapGAppsHook }:
 
 stdenv.mkDerivation rec {
   name = "eom-${version}";
-  version = "${major-ver}.${minor-ver}";
-  major-ver = "1.18";
-  minor-ver = "2";
+  version = "1.21.0";
 
   src = fetchurl {
-    url = "http://pub.mate-desktop.org/releases/${major-ver}/${name}.tar.xz";
-    sha256 = "00ns7g7qykakc89lijrw2vwy9x9ijqiyvmnd4sw0j6py90zs8m87";
+    url = "http://pub.mate-desktop.org/releases/${mate.getRelease version}/${name}.tar.xz";
+    sha256 = "165n314hxapq8glzlv7vs5x44z13wjmpysl5p7q3ckrsxy5pczww";
   };
 
   nativeBuildInputs = [
     pkgconfig
     intltool
     itstool
-    hicolor_icon_theme
     wrapGAppsHook
   ];
 
   buildInputs = [
-    dbus_glib
+    dbus-glib
     exempi
     lcms2
     libexif
     libjpeg
     librsvg
     libxml2
-    shared_mime_info
+    shared-mime-info
     gnome3.gtk
     gnome3.libpeas
     mate.mate-desktop
+    hicolor-icon-theme
   ];
 
   meta = {

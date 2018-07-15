@@ -1,4 +1,5 @@
-{ go, govers, parallel, lib, fetchgit, fetchhg, fetchbzr, rsync, removeReferencesTo }:
+{ go, govers, parallel, lib, fetchgit, fetchhg, fetchbzr, rsync
+, removeReferencesTo, fetchFromGitHub }:
 
 { name, buildInputs ? [], nativeBuildInputs ? [], passthru ? {}, preFixup ? ""
 
@@ -58,6 +59,10 @@ let
         fetchbzr {
           inherit (goDep.fetch) url rev sha256;
         }
+      else if goDep.fetch.type == "FromGitHub" then
+        fetchFromGitHub {
+          inherit (goDep.fetch) owner repo rev sha256;
+        }
       else abort "Unrecognized package fetch type: ${goDep.fetch.type}";
     };
 
@@ -93,7 +98,7 @@ go.stdenv.mkDerivation (
     rmdir goPath
 
   '') + (lib.optionalString (extraSrcPaths != []) ''
-    ${rsync}/bin/rsync -a ${lib.concatMapStrings (p: "${p}/src") extraSrcPaths} go
+    ${rsync}/bin/rsync -a ${lib.concatMapStringsSep " " (p: "${p}/src") extraSrcPaths} go
 
   '') + ''
     export GOPATH=$NIX_BUILD_TOP/go:$GOPATH
@@ -140,7 +145,7 @@ go.stdenv.mkDerivation (
       if [ -n "$subPackages" ]; then
         echo "$subPackages" | sed "s,\(^\| \),\1$goPackagePath/,g"
       else
-        pushd go/src >/dev/null
+        pushd "$NIX_BUILD_TOP/go/src" >/dev/null
         find "$goPackagePath" -type f -name \*$type.go -exec dirname {} \; | grep -v "/vendor/" | sort | uniq
         popd >/dev/null
       fi
@@ -171,15 +176,6 @@ go.stdenv.mkDerivation (
   installPhase = args.installPhase or ''
     runHook preInstall
 
-    mkdir -p $out
-    pushd "$NIX_BUILD_TOP/go"
-    while read f; do
-      echo "$f" | grep -q '^./\(src\|pkg/[^/]*\)/${goPackagePath}' || continue
-      mkdir -p "$(dirname "$out/share/go/$f")"
-      cp "$NIX_BUILD_TOP/go/$f" "$out/share/go/$f"
-    done < <(find . -type f)
-    popd
-
     mkdir -p $bin
     dir="$NIX_BUILD_TOP/go/bin"
     [ -e "$dir" ] && cp -r $dir $bin
@@ -190,6 +186,9 @@ go.stdenv.mkDerivation (
   preFixup = preFixup + ''
     find $bin/bin -type f -exec ${removeExpr removeReferences} '{}' + || true
   '';
+
+  # Disable go cache, which is not reused in nix anyway
+  GOCACHE = "off";
 
   shellHook = ''
     d=$(mktemp -d "--suffix=-$name")
@@ -215,6 +214,7 @@ go.stdenv.mkDerivation (
 
   meta = {
     # Add default meta information
+    homepage = "https://${goPackagePath}";
     platforms = go.meta.platforms or lib.platforms.all;
   } // meta // {
     # add an extra maintainer to every package

@@ -4,7 +4,7 @@
 , systemd
 , libxkbcommon
 , libdrm
-, mesa
+, libGLU_combined
 , pango
 , pixman
 , pkgconfig
@@ -16,7 +16,7 @@ stdenv.mkDerivation rec {
   name = "kmscon-8";
 
   src = fetchurl {
-    url = "http://www.freedesktop.org/software/kmscon/releases/${name}.tar.xz";
+    url = "https://www.freedesktop.org/software/kmscon/releases/${name}.tar.xz";
     sha256 = "0axfwrp3c8f4gb67ap2sqnkn75idpiw09s35wwn6kgagvhf1rc0a";
   };
 
@@ -25,13 +25,15 @@ stdenv.mkDerivation rec {
     systemd
     libxkbcommon
     libdrm
-    mesa
+    libGLU_combined
     pango
     pixman
     pkgconfig
     docbook_xsl
     libxslt
   ];
+
+  patches = [ ./kmscon-8-glibc-2.26.patch ];
 
   # FIXME: Remove as soon as kmscon > 8 comes along.
   postPatch = ''
@@ -44,6 +46,8 @@ stdenv.mkDerivation rec {
     "--enable-optimizations"
     "--with-renderers=bbulk,gltex,pixman"
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "KMS/DRM based System Console";

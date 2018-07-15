@@ -1,23 +1,19 @@
-{ stdenv, fetchFromGitHub, cmake, boost, qt4 ? null, qtbase ? null }:
-
-# Only one qt
-assert qt4 != null -> qtbase == null;
-assert qtbase != null -> qt4 == null;
+{ stdenv, fetchFromGitHub, cmake, boost, qtbase }:
 
 stdenv.mkDerivation rec {
   name = "snowman-${version}";
-  version = "2017-08-13";
+  version = "0.1.2";
 
   src = fetchFromGitHub {
     owner = "yegord";
     repo = "snowman";
-    rev = "cd9edcddf873fc40d7bcb1bb1eae815faedd3a03";
-    sha256 = "10f3kd5m5xw7hqh92ba7dcczwbznxvk1qxg0yycqz7y9mfr2282n";
+    rev = "v${version}";
+    sha256 = "1ry14n8jydg6rzl52gyn0qhmv6bvivk7iwssp89lq5qk8k183x3k";
   };
 
   nativeBuildInputs = [ cmake ];
 
-  buildInputs = [ boost qt4 qtbase ];
+  buildInputs = [ boost qtbase ];
 
   postUnpack = ''
     export sourceRoot=$sourceRoot/src

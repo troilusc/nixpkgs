@@ -4,7 +4,7 @@
 , makeWrapper
 , pkgconfig
 , wrapGAppsHook
-, gsettings_desktop_schemas
+, gsettings-desktop-schemas
 
 , qtbase
 , qttools
@@ -18,21 +18,21 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "3.6.1";
+  version = "3.10.0";
   src = fetchFromGitHub {
     owner = "nomacs";
     repo = "nomacs";
     rev = version;
-    sha256 = "0yli05hhmd57v3mynq78nmr15rbpm0vadv273pavmcnayv86yl44";
+    sha256 = "07k921r4m6p5kicyb55zdfp58m8mlc94g2csq354d7v20m71zwrv";
   };
 
   name = "nomacs-${version}";
 
   enableParallelBuilding = true;
 
-  sourceRoot = "${name}-src/ImageLounge";
-
-  patches = [./fix-appdata-install.patch];
+  setSourceRoot = ''
+    sourceRoot=$(echo */ImageLounge)
+  '';
 
   nativeBuildInputs = [cmake
                        pkgconfig
@@ -46,7 +46,7 @@ stdenv.mkDerivation rec {
                  libraw
                  libtiff
                  quazip
-                 gsettings_desktop_schemas];
+                 gsettings-desktop-schemas];
 
   cmakeFlags = ["-DENABLE_OPENCV=ON"
                 "-DENABLE_RAW=ON"

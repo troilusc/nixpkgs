@@ -56,11 +56,7 @@ let
                     # Propagate $dev so that this setup hook is propagated
                     # But only if there is a separate $dev output
                     if [ "$outputDev" != out ]; then
-                        if [ -n "$crossConfig" ]; then
-                          propagatedBuildInputs="$propagatedBuildInputs @dev@"
-                        else
-                          propagatedNativeBuildInputs="$propagatedNativeBuildInputs @dev@"
-                        fi
+                        propagatedBuildInputs="$propagatedBuildInputs @dev@"
                     fi
                 fi
               '';
@@ -133,6 +129,7 @@ let
       syntax-highlighting = callPackage ./syntax-highlighting.nix {};
       threadweaver = callPackage ./threadweaver.nix {};
       kirigami2 = callPackage ./kirigami2.nix {};
+      kholidays = callPackage ./kholidays.nix {};
 
     # TIER 2
       kactivities = callPackage ./kactivities.nix {};
@@ -158,6 +155,7 @@ let
       kded = callPackage ./kded.nix {};
       kdesignerplugin = callPackage ./kdesignerplugin.nix {};
       kdesu = callPackage ./kdesu.nix {};
+      kdewebkit = callPackage ./kdewebkit.nix {};
       kemoticons = callPackage ./kemoticons.nix {};
       kglobalaccel = callPackage ./kglobalaccel.nix {};
       kiconthemes = callPackage ./kiconthemes {};

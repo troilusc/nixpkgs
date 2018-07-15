@@ -4,7 +4,7 @@ stdenv.mkDerivation rec {
   name = "openldap-2.4.45";
 
   src = fetchurl {
-    url = "http://www.openldap.org/software/download/OpenLDAP/openldap-release/${name}.tgz";
+    url = "https://www.openldap.org/software/download/OpenLDAP/openldap-release/${name}.tgz";
     sha256 = "091qvwk5dkcpp17ziabcnh3rg3m7qwzw2pihfcd1d5fdxgywzmnd";
   };
 
@@ -34,6 +34,8 @@ stdenv.mkDerivation rec {
       ++ stdenv.lib.optional (cyrus_sasl == null) "--without-cyrus-sasl"
       ++ stdenv.lib.optional stdenv.isFreeBSD "--with-pic";
 
+  doCheck = false; # needs a running LDAP server
+
   installFlags = [ "sysconfdir=$(out)/etc" "localstatedir=$(out)/var" ];
 
   # 1. Fixup broken libtool
@@ -57,7 +59,7 @@ stdenv.mkDerivation rec {
   meta = with stdenv.lib; {
     homepage    = http://www.openldap.org/;
     description = "An open source implementation of the Lightweight Directory Access Protocol";
-    maintainers = with maintainers; [ lovek323 mornfall ];
+    maintainers = with maintainers; [ lovek323 ];
     platforms   = platforms.unix;
   };
 }

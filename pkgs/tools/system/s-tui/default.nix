@@ -3,11 +3,11 @@
 pythonPackages.buildPythonPackage rec {
   name = "${pname}-${version}";
   pname = "s-tui";
-  version = "0.6.2";
+  version = "0.7.5";
 
   src = pythonPackages.fetchPypi {
     inherit pname version;
-    sha256 = "0fijk26sm51bnxf7plzd1fn2k4f8mdqd7j9zqc3d8zri7228vik2";
+    sha256 = "01w5jh0p66jk4h3cmif4glq42zv44zhziczxjwazkd034rp8dnv9";
   };
 
   propagatedBuildInputs = with pythonPackages; [
@@ -17,7 +17,7 @@ pythonPackages.buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     homepage = https://amanusk.github.io/s-tui/;
-    descrption = "Stress-Terminal UI monitoring tool";
+    description = "Stress-Terminal UI monitoring tool";
     license = licenses.gpl2;
     maintainers = with maintainers; [ infinisil ];
   };

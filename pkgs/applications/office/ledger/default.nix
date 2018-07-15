@@ -1,5 +1,5 @@
 { stdenv, fetchFromGitHub, cmake, boost, gmp, mpfr, libedit, python
-, texinfo, gnused }:
+, texinfo, gnused, usePython ? true }:
 
 stdenv.mkDerivation rec {
   name = "ledger-${version}";
@@ -13,13 +13,16 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  buildInputs = [ boost gmp mpfr libedit python texinfo gnused ];
+  buildInputs = [
+    (boost.override { enablePython = usePython; })
+    gmp mpfr libedit python texinfo gnused
+  ];
 
   nativeBuildInputs = [ cmake ];
 
   enableParallelBuilding = true;
 
-  cmakeFlags = [ "-DCMAKE_INSTALL_LIBDIR=lib" ];
+  cmakeFlags = [ "-DCMAKE_INSTALL_LIBDIR=lib" (stdenv.lib.optionalString usePython "-DUSE_PYTHON=true") ];
 
   # Skip byte-compiling of emacs-lisp files because this is currently
   # broken in ledger...
@@ -29,7 +32,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with stdenv.lib; {
-    homepage = http://ledger-cli.org/;
+    homepage = https://ledger-cli.org/;
     description = "A double-entry accounting system with a command-line reporting interface";
     license = licenses.bsd3;
 

@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, fetchgit, pkgconfig
+{ stdenv, fetchurl, fetchFromGitHub, fetchpatch, pkgconfig
 , qt4, qmake4Hook, qt5, avahi, boost, libopus, libsndfile, protobuf, speex, libcap
 , alsaLib, python
 , jackSupport ? false, libjack2 ? null
@@ -17,7 +17,7 @@ let
   generic = overrides: source: stdenv.mkDerivation (source // overrides // {
     name = "${overrides.type}-${source.version}";
 
-    patches = optional jackSupport ./mumble-jack-support.patch;
+    patches = (source.patches or []) ++ optional jackSupport ./mumble-jack-support.patch;
 
     nativeBuildInputs = [ pkgconfig python ]
       ++ { qt4 = [ qmake4Hook ]; qt5 = [ qt5.qmake ]; }."qt${toString source.qtVersion}"
@@ -90,7 +90,7 @@ let
 
       mkdir -p $out/share/icons{,/hicolor/scalable/apps}
       cp icons/mumble.svg $out/share/icons
-      ln -s $out/share/icon/mumble.svg $out/share/icons/hicolor/scalable/apps
+      ln -s $out/share/icons/mumble.svg $out/share/icons/hicolor/scalable/apps
     '';
   } source;
 
@@ -116,17 +116,26 @@ let
       url = "https://github.com/mumble-voip/mumble/releases/download/${version}/mumble-${version}.tar.gz";
       sha256 = "1s60vaici3v034jzzi20x23hsj6mkjlc0glipjq4hffrg9qgnizh";
     };
+
+    # Fix compile error against boost 1.66 (#33655):
+    patches = singleton (fetchpatch {
+      url = "https://github.com/mumble-voip/mumble/commit/"
+          + "ea861fe86743c8402bbad77d8d1dd9de8dce447e.patch";
+      sha256 = "1r50dc8dcl6jmbj4abhnay9div7y56kpmajzqd7ql0pm853agwbh";
+    });
   };
 
   gitSource = rec {
-    version = "2017-05-25";
+    version = "2018-07-01";
     qtVersion = 5;
 
     # Needs submodules
-    src = fetchgit {
-      url = "https://github.com/mumble-voip/mumble";
-      rev = "3754898ac94ed3f1e86408114917d1b4c06f17b3";
-      sha256 = "1qh49x3y7m0c0h0gcs6amkf8nb75p6g611zwn19mbplwmi7h9y8f";
+    src = fetchFromGitHub {
+      owner = "mumble-voip";
+      repo = "mumble";
+      rev = "c19ac8c0b0f934d2ff206858d7cb66352d6eb418";
+      sha256 = "1mzp1bgn49ycs16d6r8icqq35wq25198fs084vyq6j5f78ni7pvz";
+      fetchSubmodules = true;
     };
   };
 in {
